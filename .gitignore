@@ -1,0 +1,6 @@
+bin/
+/src/Main/Debug
+*.user
+*.suo
+*.db
+*.ipch
