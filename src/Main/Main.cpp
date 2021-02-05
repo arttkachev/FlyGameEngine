@@ -120,7 +120,7 @@ void glfw_onKey(GLFWwindow* window, int key, int scancode, int action, int mode)
 		glfwSetWindowShouldClose(window, GL_TRUE);
 	}
 
-	if (key == GLFW_KEY_F10 && action == GLFW_PRESS)
+	if (key == GLFW_KEY_F5 && action == GLFW_PRESS)
 	{
 		gDrawStats = !gDrawStats;
 	}
