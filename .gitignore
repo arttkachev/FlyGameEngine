@@ -4,3 +4,4 @@ bin/
 *.suo
 *.db
 *.ipch
+*.opendb
