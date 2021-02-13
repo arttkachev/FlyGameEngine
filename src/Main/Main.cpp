@@ -16,6 +16,30 @@ const int gWindowHeight = 600;
 const bool gFullScreen = false;
 bool gDrawStats = false;
 
+// basically shaders are external files containing source code for loading
+// but at this step to test a triangle we write a shader in our main.cpp file
+// vertex shader
+const GLchar* vertexShaderSrc =
+"#version 330 core\n" // version of a shader model
+"layout (location = 0) in vec3 pos;" // vec3 = type, pos = variable
+"layout (location = 1) in vec3 color;" // location = 1 coincides with 1 in  glVertexAttribPointer(1 - first parameter for color
+"out vec3 vert_color;" // we need to pass color information into a fragment shader
+"void main()"
+"{"
+"     vert_color = color;" // we assign to vert_color what we pass in the vertex shader (see above this declaration)
+"     gl_Position = vec4(pos.x, pos.y, pos.z, 1.0);" // just outputs vertices' position. gl_Position - output of vertex shader as vec4
+"}";
+
+// fragment shader
+const GLchar* fragmentShaderSrc =
+"#version 330 core\n"
+"in vec3 vert_color;" // input for color from a vertex shader (with the same name)
+"out vec4 fragColor;" // output
+"void main()"
+"{"
+"    fragColor = vec4(vert_color, 1.0);" // assign output color
+"}";
+
 // callback function for specific key bindings
 void glfw_onKey(GLFWwindow* window, int key, int scancode, int action, int mode);
 
@@ -35,6 +59,145 @@ int main() // entry renderer point
     return -1;
   }
 
+  // create a triangle to draw it
+  // it is just an array of floats in normalized coordinate space
+  // it's responsibility of a vertext shader to convert vertax data from 3D space (on input) into normalized coord.space
+  // GLfloat - typedef of a native float. It also works for other primitive types. We use the typedef because
+  // a native float's size depends on different operating system, so it's a good idea to use OpenGL types it defines
+  GLfloat triangle[] = {
+    // interleaved vertex attributes latout in memory
+    //position        // color
+    0.0f, 0.5f, 0.0f,   1.0f, 0.0f, 0.0f,  // top vertext 
+    0.5f, -0.5, 0.0f,   0.0f, 1.0f, 0.0f,  // right vertext
+    -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f   // left vertex
+  };
+
+  // next we need to send triangle vertices to GPU
+  // we use a spacicial object for thist called vertext buffer object - the buffer that holds data in GPU memory
+  // sending data from CPU to GPU by a bus is time-consuming, so we need to minimize this process
+
+
+  ////////////// VERTEX BUFFER OBJECT//////////////
+  // our vertex buffer object identifier (uint)
+  GLuint vbo{};
+
+  // generate actual vertext buffer object
+  // it creates a chunk of memory in the graphics card for us
+  glGenBuffers(1, &vbo); //args: number of buffers, it returns back an identifer for the buffer through the variable vbo
+
+  // makes a created buffer as a current buffer. Only one buffer at a time can be active in OpenGL
+  glBindBuffer(GL_ARRAY_BUFFER, vbo); // args: kind of buffer we wanna make active (array buffer because we have an array), its identifier) 
+
+  // fill our buffer with data
+  // after these 3 calls above we created a buffer in GPU and copied our triangle data (vertices) to it
+  glBufferData(GL_ARRAY_BUFFER, sizeof(triangle), triangle, GL_STATIC_DRAW); // args: kind of buffer, its size, actural data, type of drawing (STATIC/DYNAMIC/STREAM)
+
+////////////// VERTEX ARRAY OBJECT//////////////
+  // next we need to have vertext array object to draw that holds a vertex buffer object
+  // its identifier
+  GLuint vao{};
+  
+  // Gen vertex array object in the same fashion we generated a buffer above
+  glGenVertexArrays(1, &vao); // number, bind identifier
+
+  // make it an active vertex array object by binding it
+  glBindVertexArray(vao);
+
+  // we need to tell a vertext shader how to interpret a buffer (give it a format of vertices in memory (layout in memory))  
+  // buffer is a just bytes
+  // we do this with this call
+  // IMPORTANT: before this call we need to have vao object bound
+  // layout for position
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 6, nullptr); // args: attribute index (0 - position attribute index. it's specified by OpenGL),
+  // number of elements in data (3 - specifies each vertex position in our triangle data), type of data, does it need to be normalized, 
+  // stride (space between elements) = sizeof(GLfloat) * 6 because 6 elements before next position element in the interleaved layout, 
+  // stride/offset (space before the first element) = nullptrt because it starts from 0 byte 
+
+  // by default VertexAttrib is disabled in OpenGL. We need to enable it
+  glEnableVertexAttribArray(0); //args: attrib index (0 = position) in our vertex attribute array
+
+  // layout for color
+  // last argument (GLvoid*)(sizeof(GLfloat) * 3) because the first color element starts at the 4th element
+  // in the interleaved layout
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 6, (GLvoid*)(sizeof(GLfloat) * 3));
+
+  // by default VertexAttrib is disabled in OpenGL. We need to enable it
+  glEnableVertexAttribArray(1); //args: attrib index (1 = color) in our vertex attribute array
+
+
+  ////////////CREATE_SHADERS////////////////////
+
+  // vertext shader
+  GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER); 
+
+  // assign vertex shader source
+  glShaderSource(vertexShader, 1, &vertexShaderSrc, nullptr); // args: identifier, number of shaders, source code of shader, len of shader
+  
+  // compile vertex shader
+  glCompileShader(vertexShader);
+
+  // log error if vertex shader failed to compile
+  GLint result{};
+  GLchar infoLog[512];
+
+  // get compile result
+  glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &result);
+
+  if (!result)
+  {
+    // get log info
+    glGetShaderInfoLog(vertexShader, sizeof(infoLog), nullptr, infoLog);
+    std::cout << "Error! Vertex Shader failed to compile" << infoLog << std::endl;
+  }
+
+  // fragment shader
+  GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+
+  // assign fragment shader source
+  glShaderSource(fragmentShader, 1, &fragmentShaderSrc, nullptr); // args: identifier, number of shaders, source code of shader, len of shader
+
+  // compile fragment shader
+  glCompileShader(fragmentShader);
+
+  // log error if fragment shader failed to compile
+  // get compile result
+  glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &result);
+
+  if (!result)
+  {
+    // get log info
+    glGetShaderInfoLog(fragmentShader, sizeof(infoLog), nullptr, infoLog);
+    std::cout << "Error! Fragment Shader failed to compile" << infoLog << std::endl;
+  }
+
+  // shader program
+  GLint shaderProgram = glCreateProgram();
+
+  // attach our shaders to a created shader program 
+  glAttachShader(shaderProgram, vertexShader); // args: shader program, attaching shader
+  glAttachShader(shaderProgram, fragmentShader); // args: shader program, attaching shader
+
+  // Link shader program
+  glLinkProgram(shaderProgram);
+
+  // log shader program
+  // get link status info
+  glGetProgramiv(shaderProgram, GL_LINK_STATUS, &result);
+
+  if (!result)
+  {
+    // get info log
+    glGetProgramInfoLog(shaderProgram, sizeof(infoLog), nullptr, infoLog);
+    std::cout << "Error! Shader Program Linker failure!" << infoLog << std::endl;
+  }
+
+  // because we linked shaders to a shader program we don't need them anymore
+  glDeleteShader(vertexShader);
+  glDeleteShader(fragmentShader);
+
+  ////////////END_CREATE_SHADERS////////////////////
+
+
 	// Main loop - window on the screen
 	// While a method doesn't return true we get the window on the screen
 	while (!glfwWindowShouldClose(gWindow))
@@ -48,9 +211,33 @@ int main() // entry renderer point
 		// What kind of things we want to clear (in our case this is COLOR_BUFFER)
 		glClear(GL_COLOR_BUFFER_BIT);
 
+    ////////////////DRAWING_TRIANGLE///////////////////////////
+    // activate shader program
+    glUseProgram(shaderProgram);
+
+    // before each draw we must bind our vertext array object
+    glBindVertexArray(vao);
+
+    // drawing a triangle
+    glDrawArrays(GL_TRIANGLES, 0, 3); // args: what kind of primitives our data makes up, start position, number of vertices
+
+    // after each draw we must undind our vertext array object
+    glBindVertexArray(0);
+    ///////////////END_DRAWING_TRIANGLE///////////////////////
+
 		// Double buffering (Front buffer is what a monitor shows, back buffer is what a video card draws. They are swapping to eliminate tearing)
 		glfwSwapBuffers(gWindow);
 	}
+
+  // since we're done it's a good idea to clean up everything from memory
+  // delete shader program
+  glDeleteProgram(shaderProgram);
+
+  // delete vertex array object
+  glDeleteVertexArrays(1, &vao);
+
+  // delete vertex buffer object
+  glDeleteBuffers(1, &vbo);
 
 	// GLFW cleans up itself properly
 	glfwTerminate();
