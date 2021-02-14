@@ -22,22 +22,22 @@ bool gDrawStats = false;
 const GLchar* vertexShaderSrc =
 "#version 330 core\n" // version of a shader model
 "layout (location = 0) in vec3 pos;" // vec3 = type, pos = variable
-"layout (location = 1) in vec3 color;" // location = 1 coincides with 1 in  glVertexAttribPointer(1 - first parameter for color
-"out vec3 vert_color;" // we need to pass color information into a fragment shader
+//"layout (location = 1) in vec3 color;" // location = 1 coincides with 1 in  glVertexAttribPointer(1 - first parameter for color
+//"out vec3 vert_color;" // we need to pass color information into a fragment shader
 "void main()"
 "{"
-"     vert_color = color;" // we assign to vert_color what we pass in the vertex shader (see above this declaration)
+//"     vert_color = color;" // we assign to vert_color what we pass in the vertex shader (see above this declaration)
 "     gl_Position = vec4(pos.x, pos.y, pos.z, 1.0);" // just outputs vertices' position. gl_Position - output of vertex shader as vec4
 "}";
 
 // fragment shader
 const GLchar* fragmentShaderSrc =
 "#version 330 core\n"
-"in vec3 vert_color;" // input for color from a vertex shader (with the same name)
+//"in vec3 vert_color;" // input for color from a vertex shader (with the same name)
 "out vec4 fragColor;" // output
 "void main()"
 "{"
-"    fragColor = vec4(vert_color, 1.0);" // assign output color
+"    fragColor = vec4(0.0f, 1.0f, 0.0f, 1.0f);" // assign output color
 "}";
 
 // callback function for specific key bindings
@@ -67,18 +67,25 @@ int main() // entry renderer point
 
   // We use separate buffer layout
   //position
-  GLfloat vert_position[] = {    
-    0.0f, 0.5f, 0.0f,   // top vertext 
-    0.5f, -0.5, 0.0f,   // right vertext
-   -0.5f, -0.5f, 0.0f // left vertex
+  GLfloat quad[] = {   
+    // trig 0
+   -0.5f, 0.5f, 0.0f,
+    0.5f,  0.5f, 0.0f,
+    0.5f, -0.5f, 0.0f,
+
+   ////trig 1
+   -0.5f,  0.5f, 0.0f,
+    0.5f, -0.5f, 0.0f,
+   -0.5f, -0.5f, 0.0f
+
   };
 
-  // color
-  GLfloat vert_color[] = {
-    1.0f, 0.0f, 0.0f,  // red
-    0.0f, 1.0f, 0.0f,  // green
-    0.0f, 0.0f, 1.0f   // blue
-  };
+  //// color
+  //GLfloat vert_color[] = {
+  //  1.0f, 0.0f, 0.0f,  // red
+  //  0.0f, 1.0f, 0.0f,  // green
+  //  0.0f, 0.0f, 1.0f   // blue
+  //};
 
   // next we need to send triangle vertices to GPU
   // we use a spacicial object for thist called vertext buffer object - the buffer that holds data in GPU memory
@@ -87,29 +94,29 @@ int main() // entry renderer point
 
   ////////////// VERTEX BUFFER OBJECT//////////////
   // our vertex buffer object identifier (uint)
-  GLuint vbo_position{}, vbo_color{};
+  GLuint vbo{}; //, vbo_color{};
 
   // generate actual vertext buffer object
   // it creates a chunk of memory in the graphics card for us
-  glGenBuffers(1, &vbo_position); //args: number of buffers, it returns back an identifer for the buffer through the variable vbo
+  glGenBuffers(1, &vbo); //args: number of buffers, it returns back an identifer for the buffer through the variable vbo
 
   // makes a created buffer as a current buffer. Only one buffer at a time can be active in OpenGL
-  glBindBuffer(GL_ARRAY_BUFFER, vbo_position); // args: kind of buffer we wanna make active (array buffer because we have an array), its identifier) 
+  glBindBuffer(GL_ARRAY_BUFFER, vbo); // args: kind of buffer we wanna make active (array buffer because we have an array), its identifier) 
 
   // fill our buffer with data
   // after these 3 calls above we created a buffer in GPU and copied our triangle data (vertices) to it
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vert_position), vert_position, GL_STATIC_DRAW); // args: kind of buffer, its size, actural data, type of drawing (STATIC/DYNAMIC/STREAM)
+  glBufferData(GL_ARRAY_BUFFER, sizeof(quad), quad, GL_STATIC_DRAW); // args: kind of buffer, its size, actural data, type of drawing (STATIC/DYNAMIC/STREAM)
 
-  // generate actual vertext buffer object
-  // it creates a chunk of memory in the graphics card for us
-  glGenBuffers(1, &vbo_color); //args: number of buffers, it returns back an identifer for the buffer through the variable vbo
+  //// generate actual vertext buffer object
+  //// it creates a chunk of memory in the graphics card for us
+  //glGenBuffers(1, &vbo_color); //args: number of buffers, it returns back an identifer for the buffer through the variable vbo
 
-  // makes a created buffer as a current buffer. Only one buffer at a time can be active in OpenGL
-  glBindBuffer(GL_ARRAY_BUFFER, vbo_color); // args: kind of buffer we wanna make active (array buffer because we have an array), its identifier) 
+  //// makes a created buffer as a current buffer. Only one buffer at a time can be active in OpenGL
+  //glBindBuffer(GL_ARRAY_BUFFER, vbo_color); // args: kind of buffer we wanna make active (array buffer because we have an array), its identifier) 
 
-  // fill our buffer with data
-  // after these 3 calls above we created a buffer in GPU and copied our triangle data (vertices) to it
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vert_color), vert_color, GL_STATIC_DRAW); // args: kind of buffer, its size, actural data, type of drawing (STATIC/DYNAMIC/STREAM)
+  //// fill our buffer with data
+  //// after these 3 calls above we created a buffer in GPU and copied our triangle data (vertices) to it
+  //glBufferData(GL_ARRAY_BUFFER, sizeof(vert_color), vert_color, GL_STATIC_DRAW); // args: kind of buffer, its size, actural data, type of drawing (STATIC/DYNAMIC/STREAM)
 
 ////////////// VERTEX ARRAY OBJECT//////////////
   // next we need to have vertext array object to draw that holds a vertex buffer object
@@ -122,8 +129,8 @@ int main() // entry renderer point
   // make it an active vertex array object by binding it
   glBindVertexArray(vao);
 
-  // call it agian because only 1 buufer might be active at a given time. We ensure we work with an appropriate buffer next call
-  glBindBuffer(GL_ARRAY_BUFFER, vbo_position); // args: kind of buffer we wanna make active (array buffer because we have an array), its identifier) 
+  //// call it agian because only 1 buufer might be active at a given time. We ensure we work with an appropriate buffer next call
+  //glBindBuffer(GL_ARRAY_BUFFER, vbo_position); // args: kind of buffer we wanna make active (array buffer because we have an array), its identifier) 
 
   // we need to tell a vertext shader how to interpret a buffer (give it a format of vertices in memory (layout in memory))  
   // buffer is a just bytes
@@ -140,17 +147,17 @@ int main() // entry renderer point
   // by default VertexAttrib is disabled in OpenGL. We need to enable it
   glEnableVertexAttribArray(0); //args: attrib index (0 = position) in our vertex attribute array
 
-  // call it agian because only 1 buufer might be active at a given time. We ensure we work with an appropriate buffer next call
-  glBindBuffer(GL_ARRAY_BUFFER, vbo_color); // args: kind of buffer we wanna make active (array buffer because we have an array), its identifier) 
+  //// call it agian because only 1 buufer might be active at a given time. We ensure we work with an appropriate buffer next call
+  //glBindBuffer(GL_ARRAY_BUFFER, vbo_color); // args: kind of buffer we wanna make active (array buffer because we have an array), its identifier) 
 
-  // COLOR
-  // layout for color
-  // last argument (GLvoid*)(sizeof(GLfloat) * 3) because the first color element starts at the 4th element
-  // in the interleaved layout
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+  //// COLOR
+  //// layout for color
+  //// last argument (GLvoid*)(sizeof(GLfloat) * 3) because the first color element starts at the 4th element
+  //// in the interleaved layout
+  //glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
-  // by default VertexAttrib is disabled in OpenGL. We need to enable it
-  glEnableVertexAttribArray(1); //args: attrib index (1 = color) in our vertex attribute array
+  //// by default VertexAttrib is disabled in OpenGL. We need to enable it
+  //glEnableVertexAttribArray(1); //args: attrib index (1 = color) in our vertex attribute array
 
 
   ////////////CREATE_SHADERS////////////////////
@@ -247,7 +254,7 @@ int main() // entry renderer point
     glBindVertexArray(vao);
 
     // drawing a triangle
-    glDrawArrays(GL_TRIANGLES, 0, 3); // args: what kind of primitives our data makes up, start position, number of vertices
+    glDrawArrays(GL_TRIANGLES, 0, 6); // args: what kind of primitives our data makes up, start position, number of vertices (3 for a triangle / 6 for a quad)
 
     // after each draw we must undind our vertext array object
     glBindVertexArray(0);
@@ -265,10 +272,10 @@ int main() // entry renderer point
   glDeleteVertexArrays(1, &vao);
 
   // delete position vertex buffer object (separate buffer layout)
-  glDeleteBuffers(1, &vbo_position);
+  glDeleteBuffers(1, &vbo);
 
-  // delete color vertex buffer object (separate buffer layout)
-  glDeleteBuffers(1, &vbo_color);
+  //// delete color vertex buffer object (separate buffer layout)
+  //glDeleteBuffers(1, &vbo_color);
 
 	// GLFW cleans up itself properly
 	glfwTerminate();
