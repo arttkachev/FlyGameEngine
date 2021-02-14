@@ -64,12 +64,20 @@ int main() // entry renderer point
   // it's responsibility of a vertext shader to convert vertax data from 3D space (on input) into normalized coord.space
   // GLfloat - typedef of a native float. It also works for other primitive types. We use the typedef because
   // a native float's size depends on different operating system, so it's a good idea to use OpenGL types it defines
-  GLfloat triangle[] = {
-    // interleaved vertex attributes latout in memory
-    //position        // color
-    0.0f, 0.5f, 0.0f,   1.0f, 0.0f, 0.0f,  // top vertext 
-    0.5f, -0.5, 0.0f,   0.0f, 1.0f, 0.0f,  // right vertext
-    -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f   // left vertex
+
+  // We use separate buffer layout
+  //position
+  GLfloat vert_position[] = {    
+    0.0f, 0.5f, 0.0f,   // top vertext 
+    0.5f, -0.5, 0.0f,   // right vertext
+   -0.5f, -0.5f, 0.0f // left vertex
+  };
+
+  // color
+  GLfloat vert_color[] = {
+    1.0f, 0.0f, 0.0f,  // red
+    0.0f, 1.0f, 0.0f,  // green
+    0.0f, 0.0f, 1.0f   // blue
   };
 
   // next we need to send triangle vertices to GPU
@@ -79,18 +87,29 @@ int main() // entry renderer point
 
   ////////////// VERTEX BUFFER OBJECT//////////////
   // our vertex buffer object identifier (uint)
-  GLuint vbo{};
+  GLuint vbo_position{}, vbo_color{};
 
   // generate actual vertext buffer object
   // it creates a chunk of memory in the graphics card for us
-  glGenBuffers(1, &vbo); //args: number of buffers, it returns back an identifer for the buffer through the variable vbo
+  glGenBuffers(1, &vbo_position); //args: number of buffers, it returns back an identifer for the buffer through the variable vbo
 
   // makes a created buffer as a current buffer. Only one buffer at a time can be active in OpenGL
-  glBindBuffer(GL_ARRAY_BUFFER, vbo); // args: kind of buffer we wanna make active (array buffer because we have an array), its identifier) 
+  glBindBuffer(GL_ARRAY_BUFFER, vbo_position); // args: kind of buffer we wanna make active (array buffer because we have an array), its identifier) 
 
   // fill our buffer with data
   // after these 3 calls above we created a buffer in GPU and copied our triangle data (vertices) to it
-  glBufferData(GL_ARRAY_BUFFER, sizeof(triangle), triangle, GL_STATIC_DRAW); // args: kind of buffer, its size, actural data, type of drawing (STATIC/DYNAMIC/STREAM)
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vert_position), vert_position, GL_STATIC_DRAW); // args: kind of buffer, its size, actural data, type of drawing (STATIC/DYNAMIC/STREAM)
+
+  // generate actual vertext buffer object
+  // it creates a chunk of memory in the graphics card for us
+  glGenBuffers(1, &vbo_color); //args: number of buffers, it returns back an identifer for the buffer through the variable vbo
+
+  // makes a created buffer as a current buffer. Only one buffer at a time can be active in OpenGL
+  glBindBuffer(GL_ARRAY_BUFFER, vbo_color); // args: kind of buffer we wanna make active (array buffer because we have an array), its identifier) 
+
+  // fill our buffer with data
+  // after these 3 calls above we created a buffer in GPU and copied our triangle data (vertices) to it
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vert_color), vert_color, GL_STATIC_DRAW); // args: kind of buffer, its size, actural data, type of drawing (STATIC/DYNAMIC/STREAM)
 
 ////////////// VERTEX ARRAY OBJECT//////////////
   // next we need to have vertext array object to draw that holds a vertex buffer object
@@ -103,12 +122,17 @@ int main() // entry renderer point
   // make it an active vertex array object by binding it
   glBindVertexArray(vao);
 
+  // call it agian because only 1 buufer might be active at a given time. We ensure we work with an appropriate buffer next call
+  glBindBuffer(GL_ARRAY_BUFFER, vbo_position); // args: kind of buffer we wanna make active (array buffer because we have an array), its identifier) 
+
   // we need to tell a vertext shader how to interpret a buffer (give it a format of vertices in memory (layout in memory))  
   // buffer is a just bytes
   // we do this with this call
   // IMPORTANT: before this call we need to have vao object bound
+
+  //POSITION
   // layout for position
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 6, nullptr); // args: attribute index (0 - position attribute index. it's specified by OpenGL),
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr); // args: attribute index (0 - position attribute index. it's specified by OpenGL),
   // number of elements in data (3 - specifies each vertex position in our triangle data), type of data, does it need to be normalized, 
   // stride (space between elements) = sizeof(GLfloat) * 6 because 6 elements before next position element in the interleaved layout, 
   // stride/offset (space before the first element) = nullptrt because it starts from 0 byte 
@@ -116,10 +140,14 @@ int main() // entry renderer point
   // by default VertexAttrib is disabled in OpenGL. We need to enable it
   glEnableVertexAttribArray(0); //args: attrib index (0 = position) in our vertex attribute array
 
+  // call it agian because only 1 buufer might be active at a given time. We ensure we work with an appropriate buffer next call
+  glBindBuffer(GL_ARRAY_BUFFER, vbo_color); // args: kind of buffer we wanna make active (array buffer because we have an array), its identifier) 
+
+  // COLOR
   // layout for color
   // last argument (GLvoid*)(sizeof(GLfloat) * 3) because the first color element starts at the 4th element
   // in the interleaved layout
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 6, (GLvoid*)(sizeof(GLfloat) * 3));
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
   // by default VertexAttrib is disabled in OpenGL. We need to enable it
   glEnableVertexAttribArray(1); //args: attrib index (1 = color) in our vertex attribute array
@@ -236,8 +264,11 @@ int main() // entry renderer point
   // delete vertex array object
   glDeleteVertexArrays(1, &vao);
 
-  // delete vertex buffer object
-  glDeleteBuffers(1, &vbo);
+  // delete position vertex buffer object (separate buffer layout)
+  glDeleteBuffers(1, &vbo_position);
+
+  // delete color vertex buffer object (separate buffer layout)
+  glDeleteBuffers(1, &vbo_color);
 
 	// GLFW cleans up itself properly
 	glfwTerminate();
