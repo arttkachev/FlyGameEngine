@@ -15,6 +15,7 @@ const int gWindowWidth = 800;
 const int gWindowHeight = 600;
 const bool gFullScreen = false;
 bool gDrawStats = false;
+bool gWireframeMode = false;
 
 // basically shaders are external files containing source code for loading
 // but at this step to test a triangle we write a shader in our main.cpp file
@@ -64,20 +65,21 @@ int main() // entry renderer point
   // it's responsibility of a vertext shader to convert vertax data from 3D space (on input) into normalized coord.space
   // GLfloat - typedef of a native float. It also works for other primitive types. We use the typedef because
   // a native float's size depends on different operating system, so it's a good idea to use OpenGL types it defines
-
-  // We use separate buffer layout
+  
   //position
   GLfloat quad[] = {   
-    // trig 0
+
    -0.5f, 0.5f, 0.0f,
     0.5f,  0.5f, 0.0f,
     0.5f, -0.5f, 0.0f,
-
-   ////trig 1
-   -0.5f,  0.5f, 0.0f,
-    0.5f, -0.5f, 0.0f,
    -0.5f, -0.5f, 0.0f
 
+  };
+
+  // indices to prevent from double vertices to draw 2 triangles forming a quad
+  GLuint indices[] = {
+    0, 1, 2, // trig 0
+    0, 2, 3  // trig 1
   };
 
   //// color
@@ -95,6 +97,7 @@ int main() // entry renderer point
   ////////////// VERTEX BUFFER OBJECT//////////////
   // our vertex buffer object identifier (uint)
   GLuint vbo{}; //, vbo_color{};
+  GLuint ibo{}; // index buffer object
 
   // generate actual vertext buffer object
   // it creates a chunk of memory in the graphics card for us
@@ -106,7 +109,7 @@ int main() // entry renderer point
   // fill our buffer with data
   // after these 3 calls above we created a buffer in GPU and copied our triangle data (vertices) to it
   glBufferData(GL_ARRAY_BUFFER, sizeof(quad), quad, GL_STATIC_DRAW); // args: kind of buffer, its size, actural data, type of drawing (STATIC/DYNAMIC/STREAM)
-
+  
   //// generate actual vertext buffer object
   //// it creates a chunk of memory in the graphics card for us
   //glGenBuffers(1, &vbo_color); //args: number of buffers, it returns back an identifer for the buffer through the variable vbo
@@ -158,6 +161,11 @@ int main() // entry renderer point
 
   //// by default VertexAttrib is disabled in OpenGL. We need to enable it
   //glEnableVertexAttribArray(1); //args: attrib index (1 = color) in our vertex attribute array
+
+  // set up the index buffer object (below vertex array setup) in the same way like other buffers
+  glGenBuffers(1, &ibo);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo); // GL_ELEMENT_ARRAY_BUFFER means index buffer object in OpenGL
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
 
   ////////////CREATE_SHADERS////////////////////
@@ -253,8 +261,11 @@ int main() // entry renderer point
     // before each draw we must bind our vertext array object
     glBindVertexArray(vao);
 
-    // drawing a triangle
-    glDrawArrays(GL_TRIANGLES, 0, 6); // args: what kind of primitives our data makes up, start position, number of vertices (3 for a triangle / 6 for a quad)
+    //// how to draw a triangle (wining order clockwise)
+    //glDrawArrays(GL_TRIANGLES, 0, 6); // args: what kind of primitives our data makes up, start position, number of vertices (3 for a triangle / 6 for a quad)
+
+    // since we use index buffer to prevent from double vertices in drawing quads we use another method different from glDrawArrays
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); // args: what kind of primitives our data makes up, number of vertices, type for indices, offset (no stride in front of the array)
 
     // after each draw we must undind our vertext array object
     glBindVertexArray(0);
@@ -274,6 +285,8 @@ int main() // entry renderer point
   // delete position vertex buffer object (separate buffer layout)
   glDeleteBuffers(1, &vbo);
 
+  glDeleteRenderbuffers(1, &ibo); // num of buffers, what a buffer to delete
+
   //// delete color vertex buffer object (separate buffer layout)
   //glDeleteBuffers(1, &vbo_color);
 
@@ -287,15 +300,33 @@ int main() // entry renderer point
 // Callback function to escape the window
 void glfw_onKey(GLFWwindow* window, int key, int scancode, int action, int mode)
 {
+  // close window
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 	{
 		glfwSetWindowShouldClose(window, GL_TRUE);
 	}
 
+  // draw stats
 	if (key == GLFW_KEY_F5 && action == GLFW_PRESS)
 	{
 		gDrawStats = !gDrawStats;
 	}
+
+  // switch to wireframe mode
+  if (key == GLFW_KEY_F6 && action == GLFW_PRESS)
+  {
+    gWireframeMode = !gWireframeMode;
+    if (gWireframeMode)
+    {
+      // wireframe
+      glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    }
+    else
+    {
+      // fill
+      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
+  }
 }
 
  // show fram stats implementation
