@@ -1,5 +1,6 @@
 bin/
 /src/Main/Debug
+/src/Main/Release
 *.user
 *.suo
 *.db
