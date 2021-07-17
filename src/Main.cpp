@@ -4,6 +4,8 @@
 #include "GL/glew.h" // to work with openGL and have access to all available method on a specific video card
 #include "GLFW/glfw3.h" // a lib to create, open, manage input and create contexts
 
+#include "Shaders/ShaderProgram.h"
+
 // ptr to a main window
 // create a window. We moved to global data to have an access to our main window from different scopes and functions 
 // we moved its creation from a main loop
@@ -16,30 +18,6 @@ const int gWindowHeight = 600;
 const bool gFullScreen = false;
 bool gDrawStats = false;
 bool gWireframeMode = false;
-
-// basically shaders are external files containing source code for loading
-// but at this step to test a triangle we write a shader in our main.cpp file
-// vertex shader
-const GLchar* vertexShaderSrc =
-"#version 330 core\n" // version of a shader model
-"layout (location = 0) in vec3 pos;" // vec3 = type, pos = variable
-//"layout (location = 1) in vec3 color;" // location = 1 coincides with 1 in  glVertexAttribPointer(1 - first parameter for color
-//"out vec3 vert_color;" // we need to pass color information into a fragment shader
-"void main()"
-"{"
-//"     vert_color = color;" // we assign to vert_color what we pass in the vertex shader (see above this declaration)
-"     gl_Position = vec4(pos.x, pos.y, pos.z, 1.0);" // just outputs vertices' position. gl_Position - output of vertex shader as vec4
-"}";
-
-// fragment shader
-const GLchar* fragmentShaderSrc =
-"#version 330 core\n"
-//"in vec3 vert_color;" // input for color from a vertex shader (with the same name)
-"out vec4 fragColor;" // output
-"void main()"
-"{"
-"    fragColor = vec4(0.0f, 1.0f, 0.0f, 1.0f);" // assign output color
-"}";
 
 // callback function for specific key bindings
 void glfw_onKey(GLFWwindow* window, int key, int scancode, int action, int mode);
@@ -167,79 +145,9 @@ int main() // entry renderer point
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo); // GL_ELEMENT_ARRAY_BUFFER means index buffer object in OpenGL
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-
-  ////////////CREATE_SHADERS////////////////////
-
-  // vertext shader
-  GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER); 
-
-  // assign vertex shader source
-  glShaderSource(vertexShader, 1, &vertexShaderSrc, nullptr); // args: identifier, number of shaders, source code of shader, len of shader
-  
-  // compile vertex shader
-  glCompileShader(vertexShader);
-
-  // log error if vertex shader failed to compile
-  GLint result{};
-  GLchar infoLog[512];
-
-  // get compile result
-  glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &result);
-
-  if (!result)
-  {
-    // get log info
-    glGetShaderInfoLog(vertexShader, sizeof(infoLog), nullptr, infoLog);
-    std::cout << "Error! Vertex Shader failed to compile" << infoLog << std::endl;
-  }
-
-  // fragment shader
-  GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-
-  // assign fragment shader source
-  glShaderSource(fragmentShader, 1, &fragmentShaderSrc, nullptr); // args: identifier, number of shaders, source code of shader, len of shader
-
-  // compile fragment shader
-  glCompileShader(fragmentShader);
-
-  // log error if fragment shader failed to compile
-  // get compile result
-  glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &result);
-
-  if (!result)
-  {
-    // get log info
-    glGetShaderInfoLog(fragmentShader, sizeof(infoLog), nullptr, infoLog);
-    std::cout << "Error! Fragment Shader failed to compile" << infoLog << std::endl;
-  }
-
-  // shader program
-  GLint shaderProgram = glCreateProgram();
-
-  // attach our shaders to a created shader program 
-  glAttachShader(shaderProgram, vertexShader); // args: shader program, attaching shader
-  glAttachShader(shaderProgram, fragmentShader); // args: shader program, attaching shader
-
-  // Link shader program
-  glLinkProgram(shaderProgram);
-
-  // log shader program
-  // get link status info
-  glGetProgramiv(shaderProgram, GL_LINK_STATUS, &result);
-
-  if (!result)
-  {
-    // get info log
-    glGetProgramInfoLog(shaderProgram, sizeof(infoLog), nullptr, infoLog);
-    std::cout << "Error! Shader Program Linker failure!" << infoLog << std::endl;
-  }
-
-  // because we linked shaders to a shader program we don't need them anymore
-  glDeleteShader(vertexShader);
-  glDeleteShader(fragmentShader);
-
-  ////////////END_CREATE_SHADERS////////////////////
-
+  ////////////////// CREATE SHADERS ////////////////////
+  ShaderProgram shaderProgram;
+  shaderProgram.loadShaders("Shaders/basic.vert", "Shaders/basic.frag");
 
 	// Main loop - window on the screen
 	// While a method doesn't return true we get the window on the screen
@@ -256,7 +164,22 @@ int main() // entry renderer point
 
     ////////////////DRAWING_TRIANGLE///////////////////////////
     // activate shader program
-    glUseProgram(shaderProgram);
+    shaderProgram.useProgram();
+
+    // Set shader color. Set frag shader uniform for color. We can set uniforms ONLY
+    // when the shader program is active. So, call this ONLY after userProgram() method
+    // doing some fan to get color flashing with sin and time functions 
+    GLfloat time = (GLfloat) glfwGetTime();
+    GLfloat blueColor = (sin(time) / 2) + 0.5f;
+    shaderProgram.setUniform("vertColor", glm::vec4(0.0f, 0.0f, blueColor, 1.0f));
+
+    // Set vertex position in similar way
+    glm::vec2 pos{};
+
+    // divide by 2 is to avoid the polygon going half out of the screen
+    pos.x = sin(time) / 2;
+    pos.y = cos(time) / 2;
+    shaderProgram.setUniform("posOffset", pos);
 
     // before each draw we must bind our vertext array object
     glBindVertexArray(vao);
@@ -277,7 +200,8 @@ int main() // entry renderer point
 
   // since we're done it's a good idea to clean up everything from memory
   // delete shader program
-  glDeleteProgram(shaderProgram);
+  // later will be deleted from a shader program class
+  //glDeleteProgram(shaderProgram);
 
   // delete vertex array object
   glDeleteVertexArrays(1, &vao);
