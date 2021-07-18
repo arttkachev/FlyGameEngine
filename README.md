@@ -9,4 +9,4 @@ USED LIBS (list will be updated):
 NOTICE (list will be updated):
 
 - Current version is OpenGL 3.3
-- All libs are compiled for 32-bit configuration and IDE Visual Studio 2017
+- All libs are compiled for 32-bit configuration and IDE Visual Studio 2017. They have static linkage for performance at this stage
