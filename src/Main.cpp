@@ -147,7 +147,7 @@ int main() // entry renderer point
 
   ////////////////// CREATE SHADERS ////////////////////
   ShaderProgram shaderProgram;
-  shaderProgram.loadShaders("Shaders/basic.vert", "Shaders/basic.frag");
+  shaderProgram.loadShaders("./Shaders/basic.vert", "./Shaders/basic.frag");
 
 	// Main loop - window on the screen
 	// While a method doesn't return true we get the window on the screen
