@@ -19,10 +19,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\Core\Texture2D.cpp" />
     <ClCompile Include="..\Main.cpp" />
     <ClCompile Include="..\Shaders\ShaderProgram.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Core\Texture2D.h" />
     <ClInclude Include="..\Shaders\ShaderProgram.h" />
   </ItemGroup>
   <ItemGroup>

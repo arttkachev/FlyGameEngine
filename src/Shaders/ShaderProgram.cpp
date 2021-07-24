@@ -111,6 +111,12 @@ void ShaderProgram::useProgram()
   }
 }
 
+GLuint ShaderProgram::getShaderProgram() const
+{
+  // return a handle to our program
+  return mProgramHandler;
+}
+
 void ShaderProgram::setUniform(const GLchar * name, const glm::vec2 & vec)
 {
   // Get Uniform Location from out map

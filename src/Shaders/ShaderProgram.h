@@ -27,6 +27,9 @@ public:
   // ativate a shader program
   void useProgram();
 
+  // getter of our shader program
+  GLuint getShaderProgram() const;
+
   // Uniforms are global vars "In" visible by all shaders
   void setUniform(const GLchar* name, const glm::vec2& vec);
   void setUniform(const GLchar* name, const glm::vec3& vec);

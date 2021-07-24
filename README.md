@@ -1,11 +1,12 @@
 # FlyGameEngine
-Fly Game Engine is an OpenGL based engine I am currently developing to use it for Open World projects
+FlyEngine is an OpenGL based game engine I am currently developing for personal projects
 
 USED LIBS (list will be updated):
 
  - GLFW: for window creation, context and input handling
  - GLEW: for using OpenGL API available for specific video card hardware
- - GLM:  math lib for OpenGL  
+ - GLM:  math lib for OpenGL
+ - STB:  raw image loader
 
 NOTICE (list will be updated):
 

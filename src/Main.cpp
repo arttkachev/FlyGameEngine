@@ -5,6 +5,7 @@
 #include "GLFW/glfw3.h" // a lib to create, open, manage input and create contexts
 
 #include "Shaders/ShaderProgram.h"
+#include "Core\Texture2D.h"
 
 // ptr to a main window
 // create a window. We moved to global data to have an access to our main window from different scopes and functions 
@@ -18,6 +19,9 @@ const int gWindowHeight = 600;
 const bool gFullScreen = false;
 bool gDrawStats = false;
 bool gWireframeMode = false;
+// textures
+const string defaultTexture = "./Textures/defaultTexture.png";
+const string crateTexture = "./Textures/crate.jpg";
 
 // callback function for specific key bindings
 void glfw_onKey(GLFWwindow* window, int key, int scancode, int action, int mode);
@@ -46,11 +50,11 @@ int main() // entry renderer point
   
   //position
   GLfloat quad[] = {   
-
-   -0.5f, 0.5f, 0.0f,
-    0.5f,  0.5f, 0.0f,
-    0.5f, -0.5f, 0.0f,
-   -0.5f, -0.5f, 0.0f
+    // position         // tex coords
+   -0.5f, 0.5f, 0.0f,  0.0f, 1.0f, // top left 
+    0.5f,  0.5f, 0.0f, 1.0f, 1.0f, // top right
+    0.5f, -0.5f, 0.0f, 1.0f, 0.0f, // bottom right
+   -0.5f, -0.5f, 0.0f, 0.0f, 0.0f  // bottom left
 
   };
 
@@ -119,14 +123,23 @@ int main() // entry renderer point
   // IMPORTANT: before this call we need to have vao object bound
 
   //POSITION
-  // layout for position
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr); // args: attribute index (0 - position attribute index. it's specified by OpenGL),
+  // layout for position. Add position to our vertext buffer
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), nullptr); // args: attribute index (0 - position attribute index. it's specified by OpenGL)
+  // with UV data presented in vetex buffer it turns to 5 * sizeof(GLfloat) because 5 XYZUV elements in between (to next position data),
   // number of elements in data (3 - specifies each vertex position in our triangle data), type of data, does it need to be normalized, 
   // stride (space between elements) = sizeof(GLfloat) * 6 because 6 elements before next position element in the interleaved layout, 
   // stride/offset (space before the first element) = nullptrt because it starts from 0 byte 
 
   // by default VertexAttrib is disabled in OpenGL. We need to enable it
   glEnableVertexAttribArray(0); //args: attrib index (0 = position) in our vertex attribute array
+
+  // add UV coordinates to our vertext buffer
+  // 1 means the second elemnt (UV). 0 was for position. 2 means 2 elements in this element U and V floats
+  // 5 * sizeof(GLfloat) because 5 elemtns XYZUV
+  //(GLvoid*)(3 * sizeof(GLfloat)) means void pointer to 3 (3 * sizeof(GLfloat)) because 3 elements XYZ before first UV elemtns
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+  // as before enable our array vertex attribute for UV data (1)
+  glEnableVertexAttribArray(1);
 
   //// call it agian because only 1 buufer might be active at a given time. We ensure we work with an appropriate buffer next call
   //glBindBuffer(GL_ARRAY_BUFFER, vbo_color); // args: kind of buffer we wanna make active (array buffer because we have an array), its identifier) 
@@ -149,6 +162,18 @@ int main() // entry renderer point
   ShaderProgram shaderProgram;
   shaderProgram.loadShaders("./Shaders/basic.vert", "./Shaders/basic.frag");
 
+  ////////////////// TEXTURES///////////////////
+
+  // create an instance of a 2D texture
+  Texture2D defaultTextureInstance{};
+
+  // load actual image form the disk
+  defaultTextureInstance.loadTexture(defaultTexture);
+
+  // crate texture for multiple texturing test
+  Texture2D crateTextureInstance{};
+  crateTextureInstance.loadTexture(crateTexture);
+
 	// Main loop - window on the screen
 	// While a method doesn't return true we get the window on the screen
 	while (!glfwWindowShouldClose(gWindow))
@@ -162,9 +187,24 @@ int main() // entry renderer point
 		// What kind of things we want to clear (in our case this is COLOR_BUFFER)
 		glClear(GL_COLOR_BUFFER_BIT);
 
+    // binding is required when using multiple textures    
+    defaultTextureInstance.bind(0);
+    crateTextureInstance.bind(1); // for multiple texture a texUnit allows to bind a single texture to different units
+    // that allows to blend multiple textures
+    // OpenGL can only have 1 texture bound. We handle it with texUnit that's being used for multiple texturing
+    // In our frag shader we can reference to both those texture units    
+
     ////////////////DRAWING_TRIANGLE///////////////////////////
     // activate shader program
     shaderProgram.useProgram();
+
+    // when using more than one texture unit we need to specify texture unit location for a shader
+    // args: shader program handler, name of the sampler, location of tex unit = 0
+    // glUnifrom1i() sets the locaiton
+    // glGetUniformLocation() gets the location of our uniform
+    // has to be called once our shader program is active
+    glUniform1i(glGetUniformLocation(shaderProgram.getShaderProgram(), "texSampler"), 0);
+    glUniform1i(glGetUniformLocation(shaderProgram.getShaderProgram(), "texSampler2"), 1);
 
     // Set shader color. Set frag shader uniform for color. We can set uniforms ONLY
     // when the shader program is active. So, call this ONLY after userProgram() method
