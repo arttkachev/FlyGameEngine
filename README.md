@@ -15,6 +15,8 @@ NOTICE (list will be updated):
 
 BUTTONS (list will be updated):
 
- - F5:  show stats
- - F6:  switch to a wireframe mode
- - ESC: exit 
+ - F5:    show stats
+ - F6:    switch to a wireframe mode
+ - ESC:   exit
+ - LEFT:  rotate crate to the left
+ - RIGHT: rotate crate to the right

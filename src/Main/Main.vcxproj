@@ -28,6 +28,7 @@
     <ClInclude Include="..\Shaders\ShaderProgram.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\Shaders\advancedBasic.vert" />
     <None Include="..\Shaders\basic.frag" />
     <None Include="..\Shaders\basic.vert" />
   </ItemGroup>

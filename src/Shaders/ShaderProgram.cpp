@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include "glm/gtc/type_ptr.hpp"
 
 ShaderProgram::ShaderProgram()
   : mProgramHandler{}
@@ -138,11 +139,21 @@ void ShaderProgram::setUniform(const GLchar * name, const glm::vec3 & vec)
 
 void ShaderProgram::setUniform(const GLchar * name, const glm::vec4 & vec)
 {
-  // Get Uniform Location from out map
+  // Get Uniform Location from our map
   GLint loc = getUnifomLocation(name);
 
   // Set Uniform Location
   glUniform4f(loc, vec.x, vec.y, vec.z, vec.w);
+}
+
+void ShaderProgram::setUniform(const GLchar * name, const glm::mat4 & m)
+{
+  // Get Uniform Location from our map
+  GLint loc = getUnifomLocation(name);
+
+  // Set Uniform Location
+  // args:(location, number of matrices, transpose or not matrices, ptr to the matrix
+  glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(m));
 }
 
 string ShaderProgram::readShaderFile(const string & fileName)

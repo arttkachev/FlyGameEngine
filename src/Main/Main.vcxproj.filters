@@ -36,5 +36,6 @@
   <ItemGroup>
     <None Include="..\Shaders\basic.frag" />
     <None Include="..\Shaders\basic.vert" />
+    <None Include="..\Shaders\advancedBasic.vert" />
   </ItemGroup>
 </Project>

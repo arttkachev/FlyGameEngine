@@ -34,6 +34,7 @@ public:
   void setUniform(const GLchar* name, const glm::vec2& vec);
   void setUniform(const GLchar* name, const glm::vec3& vec);
   void setUniform(const GLchar* name, const glm::vec4& vec);
+  void setUniform(const GLchar* name, const glm::mat4& m);
 
 private:
 
