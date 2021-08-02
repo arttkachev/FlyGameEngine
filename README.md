@@ -15,8 +15,8 @@ NOTICE (list will be updated):
 
 BUTTONS (list will be updated):
 
+ - F1:    orbit camera
+ - F2:    fps camera
  - F5:    show stats
  - F6:    switch to a wireframe mode
  - ESC:   exit
- - LEFT:  rotate crate to the left
- - RIGHT: rotate crate to the right
