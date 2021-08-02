@@ -84,7 +84,7 @@ int main() // entry renderer point
   // it's responsibility of a vertext shader to convert vertax data from 3D space (on input) into normalized coord.space
   // GLfloat - typedef of a native float. It also works for other primitive types. We use the typedef because
   // a native float's size depends on different operating system, so it's a good idea to use OpenGL types it defines
-  
+
   ////position
   //GLfloat quad[] = {   
   //  // position         // tex coords
@@ -102,7 +102,7 @@ int main() // entry renderer point
   //};
 
   // we wanna draw 3D cube. Specify vertex positions in the array to get a cube
-  
+
   GLfloat cube3D[] = {
     // position		 // tex coords
     // front face
@@ -152,7 +152,7 @@ int main() // entry renderer point
       -1.0f, -1.0f, 1.0f, 0.0f, 1.0f,
       -1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
       1.0f, -1.0f, -1.0f, 1.0f, 0.0f,
-  };     
+  };
 
   //// color
   //GLfloat vert_color[] = {
@@ -181,7 +181,7 @@ int main() // entry renderer point
   // fill our buffer with data
   // after these 3 calls above we created a buffer in GPU and copied our triangle data (vertices) to it
   glBufferData(GL_ARRAY_BUFFER, sizeof(cube3D), cube3D, GL_STATIC_DRAW); // args: kind of buffer, its size, actural data, type of drawing (STATIC/DYNAMIC/STREAM)
-  
+
   //// generate actual vertext buffer object
   //// it creates a chunk of memory in the graphics card for us
   //glGenBuffers(1, &vbo_color); //args: number of buffers, it returns back an identifer for the buffer through the variable vbo
@@ -197,7 +197,7 @@ int main() // entry renderer point
   // next we need to have vertext array object to draw that holds a vertex buffer object
   // its identifier
   GLuint vao{};
-  
+
   // Gen vertex array object in the same fashion we generated a buffer above
   glGenVertexArrays(1, &vao); // number, bind identifier
 
@@ -271,22 +271,22 @@ int main() // entry renderer point
   float cubeAngle = 0.0f;
   double lastTime = glfwGetTime();
 
-	// Main loop - window on the screen
-	// While a method doesn't return true we get the window on the screen
-	while (!glfwWindowShouldClose(gWindow))
-	{
-		// Stats
-		showFrameStats(gWindow, gDrawStats);
+  // Main loop - window on the screen
+  // While a method doesn't return true we get the window on the screen
+  while (!glfwWindowShouldClose(gWindow))
+  {
+    // Stats
+    showFrameStats(gWindow, gDrawStats);
 
     // rotate 3D cube. It gives us a time for each frame
     float currentTime = glfwGetTime();
     float deltaTime = currentTime - lastTime;
-		
-		// Quering any inputs (from keyboard, mouse and etc...)
-		glfwPollEvents();
-    
+
+    // Quering any inputs (from keyboard, mouse and etc...)
+    glfwPollEvents();
+
     // What kind of things we want to clear (in our case this is COLOR_BUFFER | DEPTH_BUFFER)
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // binding is required when using multiple textures    
     crateTextureInstance.bind(0);
@@ -294,7 +294,7 @@ int main() // entry renderer point
     // that allows to blend multiple textures
     // OpenGL can only have 1 texture bound. We handle it with texUnit that's being used for multiple texturing
     // In our frag shader we can reference to both those texture units   
-    
+
     // actual 3D cube rotation 50.0f is the speed of the rotation
     // rotate cubeAngle with delta time
     // !!!!!! Once we created a camera we comment this
@@ -307,7 +307,7 @@ int main() // entry renderer point
     {
       cubeAngle += (float)(deltaTime * -50.0f);
     }*/
-    
+
 
     // wrap around 360
     // !!!!!! Once we created a camera we comment this
@@ -349,7 +349,7 @@ int main() // entry renderer point
     const float farPlane = 100.0f;
 
     if (gUseFPSCamera)
-    {      
+    {
       // call update method after PollEvents to register on pressed buttons
       // update methods for fpsCamera to move it
       update(deltaTime);
@@ -371,13 +371,13 @@ int main() // entry renderer point
       // create projection matrix (perspective not orthogonal)
       // args: (field of view, aspect ration, near plane, far plane)
       // glm makes all job for us with perspective method
-      
+
       projection = glm::perspective(glm::radians(fov), (float)gWindowWidth / (float)gWindowHeight, nearPlane, farPlane);
 
       // Hides and grabs cursor, unlimited movement
       glfwSetInputMode(gWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL); // disable the cursor      
     }
-    
+
 
     // actually there is no need to do it every frame in the loop because a user might not change a camera every frame by moving a mouse
     //orbitCamera.setLookAt(cubePos); // target (where camera looks is a cubePose)
@@ -454,12 +454,12 @@ int main() // entry renderer point
     glBindVertexArray(0);
     ///////////////END_DRAWING_TRIANGLE///////////////////////
 
-		// Double buffering (Front buffer is what a monitor shows, back buffer is what a video card draws. They are swapping to eliminate tearing)
-		glfwSwapBuffers(gWindow);
+    // Double buffering (Front buffer is what a monitor shows, back buffer is what a video card draws. They are swapping to eliminate tearing)
+    glfwSwapBuffers(gWindow);
 
     // setting current time to last time for rotating 3D cube. Calculating delta
     lastTime = currentTime;
-	}
+  }
 
   // since we're done it's a good idea to clean up everything from memory
   // delete shader program
@@ -477,9 +477,9 @@ int main() // entry renderer point
   //// delete color vertex buffer object (separate buffer layout)
   //glDeleteBuffers(1, &vbo_color);
 
-	// GLFW cleans up itself properly
-	glfwTerminate();
-	return 0;
+  // GLFW cleans up itself properly
+  glfwTerminate();
+  return 0;
 }
 
 // Implementation of functions
@@ -488,10 +488,10 @@ int main() // entry renderer point
 void glfw_onKey(GLFWwindow* window, int key, int scancode, int action, int mode)
 {
   // close window
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-	{
-		glfwSetWindowShouldClose(window, GL_TRUE);
-	}
+  if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+  {
+    glfwSetWindowShouldClose(window, GL_TRUE);
+  }
 
   // !!!!!!!!!!!!! we comment this because now we use a camera
   //// rotate cube to right
@@ -519,10 +519,10 @@ void glfw_onKey(GLFWwindow* window, int key, int scancode, int action, int mode)
   //}
 
   // draw stats
-	if (key == GLFW_KEY_F5 && action == GLFW_PRESS)
-	{
-		gDrawStats = !gDrawStats;
-	}
+  if (key == GLFW_KEY_F5 && action == GLFW_PRESS)
+  {
+    gDrawStats = !gDrawStats;
+  }
 
   // switch to wireframe mode
   if (key == GLFW_KEY_F6 && action == GLFW_PRESS)
@@ -543,7 +543,7 @@ void glfw_onKey(GLFWwindow* window, int key, int scancode, int action, int mode)
   // switch camera
   if (key == GLFW_KEY_F1 && action == GLFW_PRESS)
   {
-    gUseFPSCamera = false;    
+    gUseFPSCamera = false;
   }
 
   if (key == GLFW_KEY_F2 && action == GLFW_PRESS)
@@ -633,63 +633,63 @@ void update(double elapsedTime)
     fpsCamera.move(MOVE_SPEED * (float)elapsedTime * -fpsCamera.getUp());
 }
 
- // show fram stats implementation
+// show fram stats implementation
 void showFrameStats(GLFWwindow* window, bool drawStats)
-{	
-	if (drawStats)
-	{
-		// this function counts all sort of stats
-		static double previousSeconds = 0.0;
-		static int FrameCount = 0;
-		double elapsedSeconds;
-		double currentSeconds = glfwGetTime(); // retunrs number of seconds since GLFW started, as a double
+{
+  if (drawStats)
+  {
+    // this function counts all sort of stats
+    static double previousSeconds = 0.0;
+    static int FrameCount = 0;
+    double elapsedSeconds;
+    double currentSeconds = glfwGetTime(); // retunrs number of seconds since GLFW started, as a double
 
-											   // calculate elapsed seconds with simple math
-		elapsedSeconds = currentSeconds - previousSeconds;
+                         // calculate elapsed seconds with simple math
+    elapsedSeconds = currentSeconds - previousSeconds;
 
-		// Limit data update by 4 times per second
-		const float updateLimitValue = 0.25;
+    // Limit data update by 4 times per second
+    const float updateLimitValue = 0.25;
 
-		if (elapsedSeconds > updateLimitValue)
-		{
-			previousSeconds = currentSeconds;
-			double fps = static_cast<double>(FrameCount / elapsedSeconds);
+    if (elapsedSeconds > updateLimitValue)
+    {
+      previousSeconds = currentSeconds;
+      double fps = static_cast<double>(FrameCount / elapsedSeconds);
 
-			// A time it takes to render a frame
-			const float ms = 1000.0;
-			double msPerFrame = ms / fps;
+      // A time it takes to render a frame
+      const float ms = 1000.0;
+      double msPerFrame = ms / fps;
 
-			// output stats data with string stream (a standard C++ way)
-			// TODO: a better implementation for stats output. This is not a better solution because of slight performance overhead
-			std::ostringstream outs;
+      // output stats data with string stream (a standard C++ way)
+      // TODO: a better implementation for stats output. This is not a better solution because of slight performance overhead
+      std::ostringstream outs;
 
-			// set precision of number shown
-			outs.precision(3);
+      // set precision of number shown
+      outs.precision(3);
 
-			// print data
-			outs << std::fixed // fixed precision
-							   // printing out any sort of stats information
-				<< APP_TITLE << "    "
-				<< "FPS: " << fps << "    "
-				<< "Frame Time: " << msPerFrame << " (ms)";
+      // print data
+      outs << std::fixed // fixed precision
+                 // printing out any sort of stats information
+        << APP_TITLE << "    "
+        << "FPS: " << fps << "    "
+        << "Frame Time: " << msPerFrame << " (ms)";
 
-			// affect the title of this specific window (window argument) ARGS: (specific window to affect the title, output string for a title)
-			glfwSetWindowTitle(window, outs.str().c_str());
+      // affect the title of this specific window (window argument) ARGS: (specific window to affect the title, output string for a title)
+      glfwSetWindowTitle(window, outs.str().c_str());
 
-			// update data
-			// zero frame count again
-			FrameCount = 0;
-		}
+      // update data
+      // zero frame count again
+      FrameCount = 0;
+    }
 
-		// count frames again
-		FrameCount++;
-	}
+    // count frames again
+    FrameCount++;
+  }
 
-	else
-	{		
-		glfwSetWindowTitle(window, APP_TITLE);
-	}
-	
+  else
+  {
+    glfwSetWindowTitle(window, APP_TITLE);
+  }
+
 }
 
 // init OpenGL() implementation
@@ -714,7 +714,7 @@ bool initOpenGL()
 
   // We support only version 3 and latest (forward) 
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-  
+
   if (gFullScreen)
   {
     // Let's think we only have one monitor
@@ -752,7 +752,7 @@ bool initOpenGL()
   glfwSetCursorPosCallback(gWindow, glfw_onMouseMove);
 
   // Mouse Scroll callback
-  glfwSetScrollCallback(gWindow, glfw_onMouseScroll);  
+  glfwSetScrollCallback(gWindow, glfw_onMouseScroll);
 
   // We need to initialize that (according to documentation) to set GLEW properly 
   glewExperimental = GL_TRUE;
@@ -763,7 +763,7 @@ bool initOpenGL()
     std::cerr << "GLEW Initialization failed" << std::endl;
     return false;
   }
-  
+
   // OpenGL function to clear a screen with a color every frame (the color that we use to clear a screen)
   // because OpenGL is a state machine we don't need to call glClearColor() every frame
   // we set it once and it works like a state machine, so we moved this call to here from a main loop

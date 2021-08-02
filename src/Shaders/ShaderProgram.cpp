@@ -24,7 +24,7 @@ bool ShaderProgram::loadShaders(const char * vsFileName, const char * fsFileName
 
   // get source ptr (char*) to shaders to pass them in glCreateShader
   const GLchar* vsSourcePtr = vsString.c_str();
-  const GLchar* fsSourcePtr = fsString.c_str();  
+  const GLchar* fsSourcePtr = fsString.c_str();
 
   // vertex shader id
   GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -201,10 +201,10 @@ void ShaderProgram::checkCompilierErrors(GLint shader, ShaderType type)
       glGetProgramiv(mProgramHandler, GL_INFO_LOG_LENGTH, &length);
 
       string errorLog(length, ' ');
-      
+
       // args: program or shader, log length, ptr to log length, where to put log message
       glGetProgramInfoLog(mProgramHandler, length, &length, &errorLog[0]);
-      std::cerr << "Program failed to link! " << errorLog << std::endl;    
+      std::cerr << "Program failed to link! " << errorLog << std::endl;
 
     }
   }

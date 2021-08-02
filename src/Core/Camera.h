@@ -76,7 +76,7 @@ private:
   // private method to manipulate of camera vectors
   void updateCameraVectors();
   float mRadius{};
-  
+
 
 };
 
