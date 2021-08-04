@@ -46,7 +46,7 @@ bool Mesh::loadOBJ(const std::string & filename)
     std::cout << "Loading OBJ file " << filename << " ..." << std::endl;
 
     std::string lineBuffer;
-    
+
     // reading obj file
     while (std::getline(fin, lineBuffer)) // getting a line by line from the file if found
     {

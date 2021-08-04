@@ -261,7 +261,7 @@ int main() // entry renderer point
     glm::vec3(0.0f, 0.0f, -2.0f),  // robot
     glm::vec3(0.0f, 0.0f, 0.0f)    // floor
   };
-  
+
   // model scales
   glm::vec3 modelScales[]{
     glm::vec3(1.0f, 1.0f, 1.0f),  // crate

@@ -34,12 +34,12 @@ private:
 
   // flag for internal use to check if we successfully read OBJ before creating buffers
   bool mLoaded{};
-  
+
   // container that holds vertices of a mesh
   std::vector<Vertex> mVertices{};
 
   // our VAO and VBO that contain vertices of mesh to draw them on the video card
-  GLuint mVBO{}, mVAO{}; 
+  GLuint mVBO{}, mVAO{};
 };
 
 
