@@ -125,3 +125,12 @@ void Texture2D::bind(GLint texUnit)
   // bind to listen to actions on the texture
   glBindTexture(GL_TEXTURE_2D, mTexture);
 }
+
+void Texture2D::unbind(GLint texUnit)
+{
+  // do the same as in the method above
+  glActiveTexture(GL_TEXTURE0 + texUnit);
+
+  // but just pass in 0 as a second argument to unbind
+  glBindTexture(GL_TEXTURE_2D, 0);
+}

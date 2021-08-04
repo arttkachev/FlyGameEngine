@@ -7,6 +7,7 @@
 #include "Shaders/ShaderProgram.h"
 #include "Core/Texture2D.h"
 #include "Core/Camera.h"
+#include "Core/Mesh.h"
 
 // ptr to a main window
 // create a window. We moved to global data to have an access to our main window from different scopes and functions 
@@ -22,7 +23,7 @@ bool gDrawStats = false;
 bool gWireframeMode = false;
 bool gRotateCubeToRight = false;
 bool gRotateCubeToLeft = false;
-bool gUseFPSCamera = false;
+bool gUseFPSCamera = true;
 
 // create an Orbit Camera
 OrbitCamera orbitCamera;
@@ -33,20 +34,20 @@ float gPitch{};
 float gRadius = 10.0f;
 
 // create an FPSCamera
-FPSCamera fpsCamera(glm::vec3(0.0f, 0.0f, -5.0f));
+FPSCamera fpsCamera(glm::vec3(0.0f, 5.0f, 15.0f));
 const double ZOOM_SENSITIVITY = -3.0f;
 const float MOVE_SPEED = 5.0f; //units per seconds
 const float MOUSE_SENSITIVITY = 0.1f;
 
 // position of the cube 
 // - 5.0f in fron of the camera
-glm::vec3 cubePos = glm::vec3(0.0f, 0.0f, -5.0f);
+glm::vec3 cubePos = glm::vec3(0.0f, 5.0f, 15.0f);
 glm::vec3 floorPos{}; // floor position
 
 // textures
 //const string defaultTexture = "./Textures/defaultTexture.png";
-const string crateTexture = "./Textures/crate.jpg";
-const string gridTexture = "./Textures/grid.jpg";
+//const string crateTexture = "./Textures/crate.jpg";
+//const string gridTexture = "./Textures/grid.jpg";
 
 // glfw handlers
 // callback function for specific key bindings
@@ -103,56 +104,56 @@ int main() // entry renderer point
 
   // we wanna draw 3D cube. Specify vertex positions in the array to get a cube
 
-  GLfloat cube3D[] = {
-    // position		 // tex coords
-    // front face
-    -1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
-      1.0f, -1.0f, 1.0f, 1.0f, 0.0f,
-      1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-      -1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
-      -1.0f, -1.0f, 1.0f, 0.0f, 0.0f,
-      1.0f, -1.0f, 1.0f, 1.0f, 0.0f,
+  //GLfloat cube3D[] = {
+  //  // position		 // tex coords
+  //  // front face
+  //  -1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
+  //    1.0f, -1.0f, 1.0f, 1.0f, 0.0f,
+  //    1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+  //    -1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
+  //    -1.0f, -1.0f, 1.0f, 0.0f, 0.0f,
+  //    1.0f, -1.0f, 1.0f, 1.0f, 0.0f,
 
-      // back face
-      -1.0f, 1.0f, -1.0f, 0.0f, 1.0f,
-      1.0f, -1.0f, -1.0f, 1.0f, 0.0f,
-      1.0f, 1.0f, -1.0f, 1.0f, 1.0f,
-      -1.0f, 1.0f, -1.0f, 0.0f, 1.0f,
-      -1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
-      1.0f, -1.0f, -1.0f, 1.0f, 0.0f,
+  //    // back face
+  //    -1.0f, 1.0f, -1.0f, 0.0f, 1.0f,
+  //    1.0f, -1.0f, -1.0f, 1.0f, 0.0f,
+  //    1.0f, 1.0f, -1.0f, 1.0f, 1.0f,
+  //    -1.0f, 1.0f, -1.0f, 0.0f, 1.0f,
+  //    -1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
+  //    1.0f, -1.0f, -1.0f, 1.0f, 0.0f,
 
-      // left face
-      -1.0f, 1.0f, -1.0f, 0.0f, 1.0f,
-      -1.0f, -1.0f, 1.0f, 1.0f, 0.0f,
-      -1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-      -1.0f, 1.0f, -1.0f, 0.0f, 1.0f,
-      -1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
-      -1.0f, -1.0f, 1.0f, 1.0f, 0.0f,
+  //    // left face
+  //    -1.0f, 1.0f, -1.0f, 0.0f, 1.0f,
+  //    -1.0f, -1.0f, 1.0f, 1.0f, 0.0f,
+  //    -1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+  //    -1.0f, 1.0f, -1.0f, 0.0f, 1.0f,
+  //    -1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
+  //    -1.0f, -1.0f, 1.0f, 1.0f, 0.0f,
 
-      // right face
-      1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
-      1.0f, -1.0f, -1.0f, 1.0f, 0.0f,
-      1.0f, 1.0f, -1.0f, 1.0f, 1.0f,
-      1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
-      1.0f, -1.0f, 1.0f, 0.0f, 0.0f,
-      1.0f, -1.0f, -1.0f, 1.0f, 0.0f,
+  //    // right face
+  //    1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
+  //    1.0f, -1.0f, -1.0f, 1.0f, 0.0f,
+  //    1.0f, 1.0f, -1.0f, 1.0f, 1.0f,
+  //    1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
+  //    1.0f, -1.0f, 1.0f, 0.0f, 0.0f,
+  //    1.0f, -1.0f, -1.0f, 1.0f, 0.0f,
 
-      // top face
-      -1.0f, 1.0f, -1.0f, 0.0f, 1.0f,
-      1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-      1.0f, 1.0f, -1.0f, 1.0f, 1.0f,
-      -1.0f, 1.0f, -1.0f, 0.0f, 1.0f,
-      -1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-      1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
+  //    // top face
+  //    -1.0f, 1.0f, -1.0f, 0.0f, 1.0f,
+  //    1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
+  //    1.0f, 1.0f, -1.0f, 1.0f, 1.0f,
+  //    -1.0f, 1.0f, -1.0f, 0.0f, 1.0f,
+  //    -1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+  //    1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
 
-      // bottom face
-      -1.0f, -1.0f, 1.0f, 0.0f, 1.0f,
-      1.0f, -1.0f, -1.0f, 1.0f, 0.0f,
-      1.0f, -1.0f, 1.0f, 1.0f, 1.0f,
-      -1.0f, -1.0f, 1.0f, 0.0f, 1.0f,
-      -1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
-      1.0f, -1.0f, -1.0f, 1.0f, 0.0f,
-  };
+  //    // bottom face
+  //    -1.0f, -1.0f, 1.0f, 0.0f, 1.0f,
+  //    1.0f, -1.0f, -1.0f, 1.0f, 0.0f,
+  //    1.0f, -1.0f, 1.0f, 1.0f, 1.0f,
+  //    -1.0f, -1.0f, 1.0f, 0.0f, 1.0f,
+  //    -1.0f, -1.0f, -1.0f, 0.0f, 0.0f,
+  //    1.0f, -1.0f, -1.0f, 1.0f, 0.0f,
+  //};
 
   //// color
   //GLfloat vert_color[] = {
@@ -168,68 +169,68 @@ int main() // entry renderer point
 
   ////////////// VERTEX BUFFER OBJECT//////////////
   // our vertex buffer object identifier (uint)
-  GLuint vbo{}; //, vbo_color{};
+  //GLuint vbo{}; //, vbo_color{};
   //GLuint ibo{}; // index buffer object
 
-  // generate actual vertext buffer object
-  // it creates a chunk of memory in the graphics card for us
-  glGenBuffers(1, &vbo); //args: number of buffers, it returns back an identifer for the buffer through the variable vbo
-
-  // makes a created buffer as a current buffer. Only one buffer at a time can be active in OpenGL
-  glBindBuffer(GL_ARRAY_BUFFER, vbo); // args: kind of buffer we wanna make active (array buffer because we have an array), its identifier) 
-
-  // fill our buffer with data
-  // after these 3 calls above we created a buffer in GPU and copied our triangle data (vertices) to it
-  glBufferData(GL_ARRAY_BUFFER, sizeof(cube3D), cube3D, GL_STATIC_DRAW); // args: kind of buffer, its size, actural data, type of drawing (STATIC/DYNAMIC/STREAM)
-
-  //// generate actual vertext buffer object
-  //// it creates a chunk of memory in the graphics card for us
-  //glGenBuffers(1, &vbo_color); //args: number of buffers, it returns back an identifer for the buffer through the variable vbo
-
-  //// makes a created buffer as a current buffer. Only one buffer at a time can be active in OpenGL
-  //glBindBuffer(GL_ARRAY_BUFFER, vbo_color); // args: kind of buffer we wanna make active (array buffer because we have an array), its identifier) 
-
-  //// fill our buffer with data
-  //// after these 3 calls above we created a buffer in GPU and copied our triangle data (vertices) to it
-  //glBufferData(GL_ARRAY_BUFFER, sizeof(vert_color), vert_color, GL_STATIC_DRAW); // args: kind of buffer, its size, actural data, type of drawing (STATIC/DYNAMIC/STREAM)
-
-////////////// VERTEX ARRAY OBJECT//////////////
-  // next we need to have vertext array object to draw that holds a vertex buffer object
-  // its identifier
-  GLuint vao{};
-
-  // Gen vertex array object in the same fashion we generated a buffer above
-  glGenVertexArrays(1, &vao); // number, bind identifier
-
-  // make it an active vertex array object by binding it
-  glBindVertexArray(vao);
-
-  //// call it agian because only 1 buufer might be active at a given time. We ensure we work with an appropriate buffer next call
-  //glBindBuffer(GL_ARRAY_BUFFER, vbo_position); // args: kind of buffer we wanna make active (array buffer because we have an array), its identifier) 
-
-  // we need to tell a vertext shader how to interpret a buffer (give it a format of vertices in memory (layout in memory))  
-  // buffer is a just bytes
-  // we do this with this call
-  // IMPORTANT: before this call we need to have vao object bound
-
-  //POSITION
-  // layout for position. Add position to our vertext buffer
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), nullptr); // args: attribute index (0 - position attribute index. it's specified by OpenGL)
-  // with UV data presented in vetex buffer it turns to 5 * sizeof(GLfloat) because 5 XYZUV elements in between (to next position data),
-  // number of elements in data (3 - specifies each vertex position in our triangle data), type of data, does it need to be normalized, 
-  // stride (space between elements) = sizeof(GLfloat) * 6 because 6 elements before next position element in the interleaved layout, 
-  // stride/offset (space before the first element) = nullptrt because it starts from 0 byte 
-
-  // by default VertexAttrib is disabled in OpenGL. We need to enable it
-  glEnableVertexAttribArray(0); //args: attrib index (0 = position) in our vertex attribute array
-
-  // add UV coordinates to our vertext buffer
-  // 1 means the second elemnt (UV). 0 was for position. 2 means 2 elements in this element U and V floats
-  // 5 * sizeof(GLfloat) because 5 elemtns XYZUV
-  //(GLvoid*)(3 * sizeof(GLfloat)) means void pointer to 3 (3 * sizeof(GLfloat)) because 3 elements XYZ before first UV elemtns
-  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
-  // as before enable our array vertex attribute for UV data (1)
-  glEnableVertexAttribArray(1);
+//  // generate actual vertext buffer object
+//  // it creates a chunk of memory in the graphics card for us
+//  glGenBuffers(1, &vbo); //args: number of buffers, it returns back an identifer for the buffer through the variable vbo
+//
+//  // makes a created buffer as a current buffer. Only one buffer at a time can be active in OpenGL
+//  glBindBuffer(GL_ARRAY_BUFFER, vbo); // args: kind of buffer we wanna make active (array buffer because we have an array), its identifier) 
+//
+//  // fill our buffer with data
+//  // after these 3 calls above we created a buffer in GPU and copied our triangle data (vertices) to it
+//  glBufferData(GL_ARRAY_BUFFER, sizeof(cube3D), cube3D, GL_STATIC_DRAW); // args: kind of buffer, its size, actural data, type of drawing (STATIC/DYNAMIC/STREAM)
+//
+//  //// generate actual vertext buffer object
+//  //// it creates a chunk of memory in the graphics card for us
+//  //glGenBuffers(1, &vbo_color); //args: number of buffers, it returns back an identifer for the buffer through the variable vbo
+//
+//  //// makes a created buffer as a current buffer. Only one buffer at a time can be active in OpenGL
+//  //glBindBuffer(GL_ARRAY_BUFFER, vbo_color); // args: kind of buffer we wanna make active (array buffer because we have an array), its identifier) 
+//
+//  //// fill our buffer with data
+//  //// after these 3 calls above we created a buffer in GPU and copied our triangle data (vertices) to it
+//  //glBufferData(GL_ARRAY_BUFFER, sizeof(vert_color), vert_color, GL_STATIC_DRAW); // args: kind of buffer, its size, actural data, type of drawing (STATIC/DYNAMIC/STREAM)
+//
+//////////////// VERTEX ARRAY OBJECT//////////////
+//  // next we need to have vertext array object to draw that holds a vertex buffer object
+//  // its identifier
+//  GLuint vao{};
+//
+//  // Gen vertex array object in the same fashion we generated a buffer above
+//  glGenVertexArrays(1, &vao); // number, bind identifier
+//
+//  // make it an active vertex array object by binding it
+//  glBindVertexArray(vao);
+//
+//  //// call it agian because only 1 buufer might be active at a given time. We ensure we work with an appropriate buffer next call
+//  //glBindBuffer(GL_ARRAY_BUFFER, vbo_position); // args: kind of buffer we wanna make active (array buffer because we have an array), its identifier) 
+//
+//  // we need to tell a vertext shader how to interpret a buffer (give it a format of vertices in memory (layout in memory))  
+//  // buffer is a just bytes
+//  // we do this with this call
+//  // IMPORTANT: before this call we need to have vao object bound
+//
+//  //POSITION
+//  // layout for position. Add position to our vertext buffer
+//  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), nullptr); // args: attribute index (0 - position attribute index. it's specified by OpenGL)
+//  // with UV data presented in vetex buffer it turns to 5 * sizeof(GLfloat) because 5 XYZUV elements in between (to next position data),
+//  // number of elements in data (3 - specifies each vertex position in our triangle data), type of data, does it need to be normalized, 
+//  // stride (space between elements) = sizeof(GLfloat) * 6 because 6 elements before next position element in the interleaved layout, 
+//  // stride/offset (space before the first element) = nullptrt because it starts from 0 byte 
+//
+//  // by default VertexAttrib is disabled in OpenGL. We need to enable it
+//  glEnableVertexAttribArray(0); //args: attrib index (0 = position) in our vertex attribute array
+//
+//  // add UV coordinates to our vertext buffer
+//  // 1 means the second elemnt (UV). 0 was for position. 2 means 2 elements in this element U and V floats
+//  // 5 * sizeof(GLfloat) because 5 elemtns XYZUV
+//  //(GLvoid*)(3 * sizeof(GLfloat)) means void pointer to 3 (3 * sizeof(GLfloat)) because 3 elements XYZ before first UV elemtns
+//  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+//  // as before enable our array vertex attribute for UV data (1)
+//  glEnableVertexAttribArray(1);
 
   //// call it agian because only 1 buufer might be active at a given time. We ensure we work with an appropriate buffer next call
   //glBindBuffer(GL_ARRAY_BUFFER, vbo_color); // args: kind of buffer we wanna make active (array buffer because we have an array), its identifier) 
@@ -252,6 +253,41 @@ int main() // entry renderer point
   ShaderProgram shaderProgram;
   shaderProgram.loadShaders("./Shaders/advancedBasic.vert", "./Shaders/basic.frag");
 
+  // LOAD MESHES
+  // model positions
+  glm::vec3 modelPositions[]{
+    glm::vec3(-2.5f, 1.0f, 0.0f),  // crate
+    glm::vec3(2.5f, 1.0f, 0.0f),   // woodcrate
+    glm::vec3(0.0f, 0.0f, -2.0f),  // robot
+    glm::vec3(0.0f, 0.0f, 0.0f)    // floor
+  };
+  
+  // model scales
+  glm::vec3 modelScales[]{
+    glm::vec3(1.0f, 1.0f, 1.0f),  // crate
+    glm::vec3(1.0f, 1.0f, 1.0f),  // woodcrate
+    glm::vec3(1.0f, 1.0f, 1.0f),  // robot
+    glm::vec3(10.0f, 0.0f, 10.0f) // floor
+  };
+
+  const int numOfModels = 4;
+  Mesh mesh[numOfModels];
+  // load textures separately
+  Texture2D texture[numOfModels];
+
+  // load meshes
+  mesh[0].loadOBJ("./Models/crate.obj");
+  mesh[1].loadOBJ("./Models/woodcrate.obj");
+  mesh[2].loadOBJ("./Models/robot.obj");
+  mesh[3].loadOBJ("./Models/floor.obj");
+
+  // load textures
+  texture[0].loadTexture("./Textures/crate.jpg");
+  texture[1].loadTexture("./Textures/woodcrate_diffuse.jpg");
+  texture[2].loadTexture("./Textures/robot_diffuse.jpg");
+  texture[3].loadTexture("./Textures/tile_floor.jpg");
+
+
   ////////////////// TEXTURES///////////////////
 
   // create an instance of a 2D texture
@@ -261,14 +297,14 @@ int main() // entry renderer point
   //defaultTextureInstance.loadTexture(defaultTexture);
 
   // crate texture for multiple texturing test
-  Texture2D crateTextureInstance{};
+  /*Texture2D crateTextureInstance{};
   crateTextureInstance.loadTexture(crateTexture);
 
   Texture2D gridTextureInstance{};
-  gridTextureInstance.loadTexture(gridTexture);
+  gridTextureInstance.loadTexture(gridTexture);*/
 
   // rotate 3D cube
-  float cubeAngle = 0.0f;
+  //float cubeAngle = 0.0f;
   double lastTime = glfwGetTime();
 
   // Main loop - window on the screen
@@ -289,7 +325,7 @@ int main() // entry renderer point
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // binding is required when using multiple textures    
-    crateTextureInstance.bind(0);
+    //crateTextureInstance.bind(0);
     //crateTextureInstance.bind(1); // for multiple texture a texUnit allows to bind a single texture to different units
     // that allows to blend multiple textures
     // OpenGL can only have 1 texture bound. We handle it with texUnit that's being used for multiple texturing
@@ -327,7 +363,7 @@ int main() // entry renderer point
 
     // !!!!!! Once we created a camera we don't want to rotate the cube anymore. We leave only translate part below
     //model = glm::translate(model, cubePos) * glm::rotate(model, glm::radians(cubeAngle), glm::vec3(0.0f, 0.1, 0.0));
-    model = glm::translate(model, cubePos);
+    //model = glm::translate(model, cubePos);
 
     // setup view matrix. It creates our view matrix we pass in our vertex shader
     // !!!!!! Once we created a camera we comment this
@@ -420,16 +456,16 @@ int main() // entry renderer point
     //shaderProgram.setUniform("posOffset", pos);
 
     // set uniforms (variables to read them in a vertex shader) as above (see comments)
-    shaderProgram.setUniform("model", model);
+    // shaderProgram.setUniform("model", model);
     shaderProgram.setUniform("view", view);
     shaderProgram.setUniform("projection", projection);
 
     // before each draw we must bind our vertext array object
-    glBindVertexArray(vao);
+    //glBindVertexArray(vao);
 
     //// how to draw a triangle (wining order clockwise)
     // this is actual drawing of our vertices from the array
-    glDrawArrays(GL_TRIANGLES, 0, 36); // args: what kind of primitives our data makes up, start position, number of vertices (3 for a triangle / 6 for a quad)
+    //glDrawArrays(GL_TRIANGLES, 0, 36); // args: what kind of primitives our data makes up, start position, number of vertices (3 for a triangle / 6 for a quad)
 
     // since we use index buffer to prevent from double vertices in drawing quads we use another method different from glDrawArrays
     //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); // args: what kind of primitives our data makes up, number of vertices, type for indices, offset (no stride in front of the array)
@@ -437,21 +473,40 @@ int main() // entry renderer point
     // FLOOR
     // after drawing a cube we make a texture of the grid "active" and draw a floor (it's made in sequence)
     // if bind a texture above after binding the texture of the cube both objects (cube and floor) will be drawn with one texture (last bound)
-    gridTextureInstance.bind(0); // we bind to 0 texUnit because we reuse a cube with another texture to get a floor    
-    floorPos.y = -1.0f; // we wanna draw a floor a little bit lower than a cube
+    //gridTextureInstance.bind(0); // we bind to 0 texUnit because we reuse a cube with another texture to get a floor    
+    //floorPos.y = -1.0f; // we wanna draw a floor a little bit lower than a cube
 
     // Position and render the floor (a squashed and scaled cube!)
     // Make the floor texture "active" in the shaders
     // model matrix of the floor (translate) multiplied by scale to flat our cube and get it as a floor. We reuse cube to get a floor
     model = glm::translate(model, floorPos) * glm::scale(model, glm::vec3(10.0f, 0.01f, 10.0f));
 
+    // DRAW LOADED MODELS
+    for (int i = 0; i < numOfModels; i++)
+    {
+      // position each model in the space (glm::translatte)
+      // args (glm::mat4 means identity matrix. Just affects a matrix itself)
+      // if we passed in ""model" it would squashed itself and got messy results
+      // multiply by scale to get model scales we want (glm::scale)
+      model = glm::translate(glm::mat4(), modelPositions[i]) * glm::scale(glm::mat4(), modelScales[i]);
+
+      // set uniform for a shader
+      shaderProgram.setUniform("model", model);
+
+      // draw meshes
+      texture[i].bind(0);
+      mesh[i].draw();
+      texture[i].unbind(0);
+
+    }
+
     // we also need to tell our shader to draw the floor one more time and draw our floor (vertices) one more time
-    shaderProgram.setUniform("model", model);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+    // shaderProgram.setUniform("model", model);
+    //glDrawArrays(GL_TRIANGLES, 0, 36);
 
 
     // after each draw we must undind our vertext array object
-    glBindVertexArray(0);
+    //glBindVertexArray(0);
     ///////////////END_DRAWING_TRIANGLE///////////////////////
 
     // Double buffering (Front buffer is what a monitor shows, back buffer is what a video card draws. They are swapping to eliminate tearing)
@@ -467,10 +522,10 @@ int main() // entry renderer point
   //glDeleteProgram(shaderProgram);
 
   // delete vertex array object
-  glDeleteVertexArrays(1, &vao);
+  //glDeleteVertexArrays(1, &vao);
 
   // delete position vertex buffer object (separate buffer layout)
-  glDeleteBuffers(1, &vbo);
+  //glDeleteBuffers(1, &vbo);
 
   //glDeleteRenderbuffers(1, &ibo); // num of buffers, what a buffer to delete
 

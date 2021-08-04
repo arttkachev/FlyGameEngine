@@ -20,6 +20,8 @@ public:
   // see in Main how it's being used
   void bind(GLint texUnit = 0);
 
+  void unbind(GLint texUnit = 0);
+
 private:
 
   // Like many other OpenGL objects OpenGL holds a texture itself
