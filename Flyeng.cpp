@@ -1,4 +1,6 @@
-﻿#include <iostream>
+#pragma once
+
+#include <iostream>
 #include <sstream>
 #define GLEW_STATIC
 #include "GL/glew.h" // to work with openGL and have access to all available method on a specific video card
@@ -15,10 +17,10 @@
 GLFWwindow* gWindow = nullptr;
 
 // common renderer settings
-const char* APP_TITLE = "FlyEngine";
+constexpr const char* APP_TITLE = "Flyeng 1.0";
 int gWindowWidth = 1024;
 int gWindowHeight = 768;
-const bool gFullScreen = false;
+bool gFullScreen = true;
 bool gDrawStats = false;
 bool gWireframeMode = false;
 bool gRotateCubeToRight = false;
@@ -270,7 +272,7 @@ int main() // entry renderer point
     glm::vec3(10.0f, 0.0f, 10.0f) // floor
   };
 
-  const int numOfModels = 4;
+  constexpr uint8_t numOfModels = 4;
   Mesh mesh[numOfModels];
   // load textures separately
   Texture2D texture[numOfModels];
@@ -315,8 +317,8 @@ int main() // entry renderer point
     showFrameStats(gWindow, gDrawStats);
 
     // rotate 3D cube. It gives us a time for each frame
-    float currentTime = glfwGetTime();
-    float deltaTime = currentTime - lastTime;
+    auto currentTime = glfwGetTime();
+    auto deltaTime = currentTime - lastTime;
 
     // Quering any inputs (from keyboard, mouse and etc...)
     glfwPollEvents();
@@ -607,7 +609,7 @@ void glfw_onKey(GLFWwindow* window, int key, int scancode, int action, int mode)
   }
 }
 
-void glfw_onFrameWindowBufferResized(GLFWwindow * window, int width, int height)
+void glfw_onFrameWindowBufferResized(GLFWwindow* window, int width, int height)
 {
   // reset variables that specify our window size
   gWindowWidth = width;
@@ -646,7 +648,7 @@ void glfw_onMouseMove(GLFWwindow* window, double posX, double posY)
 }
 
 // called when mouse wheel rotated
-void glfw_onMouseScroll(GLFWwindow * window, double deltaX, double deltaY)
+void glfw_onMouseScroll(GLFWwindow* window, double deltaX, double deltaY)
 {
   double fov = fpsCamera.getFOV() + deltaY * ZOOM_SENSITIVITY;
   fov = glm::clamp(fov, 1.0, 120.0);
@@ -695,11 +697,11 @@ void showFrameStats(GLFWwindow* window, bool drawStats)
   {
     // this function counts all sort of stats
     static double previousSeconds = 0.0;
-    static int FrameCount = 0;
-    double elapsedSeconds;
+    static uint16_t FrameCount = 0;
+    double elapsedSeconds{};
     double currentSeconds = glfwGetTime(); // retunrs number of seconds since GLFW started, as a double
 
-                         // calculate elapsed seconds with simple math
+    // calculate elapsed seconds with simple math
     elapsedSeconds = currentSeconds - previousSeconds;
 
     // Limit data update by 4 times per second
@@ -711,7 +713,7 @@ void showFrameStats(GLFWwindow* window, bool drawStats)
       double fps = static_cast<double>(FrameCount / elapsedSeconds);
 
       // A time it takes to render a frame
-      const float ms = 1000.0;
+      constexpr float ms = 1000.0;
       double msPerFrame = ms / fps;
 
       // output stats data with string stream (a standard C++ way)
@@ -723,7 +725,7 @@ void showFrameStats(GLFWwindow* window, bool drawStats)
 
       // print data
       outs << std::fixed // fixed precision
-                 // printing out any sort of stats information
+        // printing out any sort of stats information
         << APP_TITLE << "    "
         << "FPS: " << fps << "    "
         << "Frame Time: " << msPerFrame << " (ms)";

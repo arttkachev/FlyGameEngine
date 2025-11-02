@@ -25,9 +25,7 @@ glm::mat4 Camera::getViewMatrix() const
 // Orbit Camera
 OrbitCamera::OrbitCamera()
   : mRadius(10.0f)
-{
-
-}
+{}
 
 void OrbitCamera::rotate(float yaw, float pitch)
 {

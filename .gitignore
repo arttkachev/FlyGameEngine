@@ -7,3 +7,4 @@ bin/
 *.ipch
 *.opendb
 *.tlog
+*.vs

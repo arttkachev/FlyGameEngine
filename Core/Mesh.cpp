@@ -6,10 +6,7 @@
 
 Mesh::Mesh()
   : mLoaded{ false }
-{
-
-}
-
+{}
 
 Mesh::~Mesh()
 {

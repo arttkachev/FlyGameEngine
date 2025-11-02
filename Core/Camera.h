@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef CAMERA_H
 #define CAMERA_H
 #include "glm/glm.hpp"
@@ -7,10 +9,8 @@
 // a main purpose of this class to return a view matrix to the program
 class Camera
 {
-
 public:
   glm::mat4 getViewMatrix() const;
-
   virtual void rotate(float yaw, float pitch) {}; // in degrees
   virtual void setPostion(const glm::vec3& position) {};
   virtual void move(const glm::vec3& offsetPos) {};
