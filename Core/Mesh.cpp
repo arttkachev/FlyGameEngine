@@ -1,7 +1,8 @@
-#include "Mesh.h"
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include "Mesh.h"
+#include "Containers/FVector.h"
 
 
 Mesh::Mesh()
@@ -24,9 +25,9 @@ Mesh::~Mesh()
 bool Mesh::loadOBJ(const std::string & filename)
 {
   // temp containers to hold data while reading obj files
-  std::vector<unsigned int> vertexIndices, uvIndices;
-  std::vector<glm::vec3> tempVertices;
-  std::vector<glm::vec2> tempUVs;
+  FVector<unsigned int> vertexIndices, uvIndices{};
+  FVector<glm::vec3> tempVertices{};
+  FVector<glm::vec2> tempUVs{};
 
   // check if the file has obj extention
   if (filename.find(".obj") != std::string::npos)
@@ -42,7 +43,7 @@ bool Mesh::loadOBJ(const std::string & filename)
     // if the file found we display a message
     std::cout << "Loading OBJ file " << filename << " ..." << std::endl;
 
-    std::string lineBuffer;
+    std::string lineBuffer{};
 
     // reading obj file
     while (std::getline(fin, lineBuffer)) // getting a line by line from the file if found
@@ -52,14 +53,14 @@ bool Mesh::loadOBJ(const std::string & filename)
         std::istringstream v(lineBuffer.substr(2)); // input string stream reads the line after substr 2
         glm::vec3 vertex;
         v >> vertex.x; v >> vertex.y; v >> vertex.z; // write data from the file after substring 2 into vec3 in sequence
-        tempVertices.push_back(vertex); // add vertex data into temp container
+        tempVertices.Add(vertex); // add vertex data into temp container
       }
       else if (lineBuffer.substr(0, 2) == "vt") // looking for a "vt" (vertex texture data) in the file (0, 2) - look for 2 characters from the begining of the each line
       {
         std::istringstream vt(lineBuffer.substr(3)); // the same algorithm goes here as above. Write uv data into vec2 and add into a temp container
         glm::vec2 uv; // ignore w
         vt >> uv.s; vt >> uv.t; // look at obj file to understand this process how it reads and writes
-        tempUVs.push_back(uv);
+        tempUVs.Add(uv);
       }
       else if (lineBuffer.substr(0, 2) == "f ") // looking for a "f " (faces data) in the file (0, 2) - look for 2 characters from the begining of the each line
       {
@@ -76,13 +77,13 @@ bool Mesh::loadOBJ(const std::string & filename)
 
         // We are ignoring normals (for now)
         // fill indices list from gotten data above
-        vertexIndices.push_back(p1);
-        vertexIndices.push_back(p2);
-        vertexIndices.push_back(p3);
+        vertexIndices.Add(p1);
+        vertexIndices.Add(p2);
+        vertexIndices.Add(p3);
         // fill UV indices list from gotten data above
-        uvIndices.push_back(t1);
-        uvIndices.push_back(t2);
-        uvIndices.push_back(t3);
+        uvIndices.Add(t1);
+        uvIndices.Add(t2);
+        uvIndices.Add(t3);
       }
     }
 
@@ -92,7 +93,7 @@ bool Mesh::loadOBJ(const std::string & filename)
 
     // For each vertex of each triangle
     // process data from temp containers and create data that VBO is going to use
-    for (unsigned int i = 0; i < vertexIndices.size(); i++)
+    for (unsigned int i = 0; i < vertexIndices.Size(); i++)
     {
       // Get the attributes using the indices
       // intermediate step before creating final data
@@ -105,7 +106,7 @@ bool Mesh::loadOBJ(const std::string & filename)
       meshVertex.position = vertex;
       meshVertex.texCoords = uv;
 
-      mVertices.push_back(meshVertex);
+      VertexBuffer.Add(meshVertex);
     }
 
     // Create and initialize the buffers
@@ -127,7 +128,7 @@ void Mesh::draw()
 
   // draw array
   // args (type of what we draw, first element (vertex in the array), last element (vertex) in the array)
-  glDrawArrays(GL_TRIANGLES, 0, mVertices.size());
+  glDrawArrays(GL_TRIANGLES, 0, VertexBuffer.Size());
 
   // unbinding. Close it down by passing 0 as an argument
   // by this (0 arg) we tell OpenGL we're done with our vertex array object and other code won't have an access to it
@@ -149,10 +150,10 @@ void Mesh::initBuffers()
 
   // fill our buffer with data
   // after these 3 calls above we created a buffer in GPU and copied our triangle data (vertices) to it
-  // mVertices.size() * sizeof(Vertex) we get the size of the buffer in bytes we need mVertices.size() = number of elements in the container
+  // VertexBuffer.size() * sizeof(Vertex) we get the size of the buffer in bytes we need VertexBuffer.size() = number of elements in the container
   // sizeof(Vertex) = size of one element in the container
-  // &mVertices[0] = ptr to the first element. Arg = address of data
-  glBufferData(GL_ARRAY_BUFFER, mVertices.size() * sizeof(Vertex), &mVertices[0], GL_STATIC_DRAW); // args: kind of buffer, its size, actural data, type of drawing (STATIC/DYNAMIC/STREAM)
+  // &VertexBuffer[0] = ptr to the first element. Arg = address of data
+  glBufferData(GL_ARRAY_BUFFER, VertexBuffer.Size() * sizeof(Vertex), &VertexBuffer[0], GL_STATIC_DRAW); // args: kind of buffer, its size, actural data, type of drawing (STATIC/DYNAMIC/STREAM)
 
   //// generate actual vertext buffer object
   //// it creates a chunk of memory in the graphics card for us

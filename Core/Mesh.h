@@ -3,10 +3,11 @@
 #ifndef MESH_H
 #define MESH_H
 
-#include <vector>
 #include <string>
 #include "GL/glew.h"
 #include "glm/glm.hpp"
+#include "Containers/FVector.h"
+
 
 // a custom data type that's gonna hold vertex data
 struct Vertex
@@ -38,7 +39,7 @@ private:
   bool mLoaded{};
 
   // container that holds vertices of a mesh
-  std::vector<Vertex> mVertices{};
+  FVector<Vertex> VertexBuffer{};
 
   // our VAO and VBO that contain vertices of mesh to draw them on the video card
   GLuint mVBO{}, mVAO{};

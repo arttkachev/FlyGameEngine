@@ -12,7 +12,7 @@ template <typename T>
 class FVector
 {
 public:
-  FVector(size_t const MaxElementsNum = 50, size_t const GrowSize = 50) :
+  FVector(size_t const MaxElementsNum = 100, size_t const GrowSize = 100) :
     ArrayBuffer(nullptr),
     MaxElementsNumber(MaxElementsNum),
     GrowSize(GrowSize),
@@ -23,8 +23,8 @@ public:
   template<typename... Args>
   FVector(Args&&... args) :
     ArrayBuffer(nullptr),
-    MaxElementsNumber(50),
-    GrowSize(50),
+    MaxElementsNumber(100),
+    GrowSize(100),
     NumElements(0)
   {
     cout << "First allocation happened" << endl;
