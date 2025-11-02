@@ -1,5 +1,5 @@
-# FlyGameEngine
-FlyEngine is an OpenGL based game engine I am currently developing for personal projects
+# Flyeng
+Flyeng is a game engine I am currently developing for personal projects
 
 USED LIBS (list will be updated):
 
