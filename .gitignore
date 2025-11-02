@@ -1,6 +1,8 @@
 bin/
 /src/Main/Debug
 /src/Main/Release
+/Release
+/Flyeng
 *.user
 *.suo
 *.db
@@ -8,3 +10,4 @@ bin/
 *.opendb
 *.tlog
 *.vs
+*.filters
