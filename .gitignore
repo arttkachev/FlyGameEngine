@@ -3,6 +3,7 @@ bin/
 /src/Main/Release
 /Release
 /Flyeng
+/Debug
 *.user
 *.suo
 *.db
