@@ -146,24 +146,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Core\Camera.cpp" />
     <ClCompile Include="Core\Containers\FVector.cpp" />
-    <ClCompile Include="Core\Mesh.cpp" />
-    <ClCompile Include="Core\Texture2D.cpp" />
     <ClCompile Include="Flyeng.cpp" />
-    <ClCompile Include="Shaders\ShaderProgram.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Core\Camera.h" />
     <ClInclude Include="Core\Containers\FVector.h" />
-    <ClInclude Include="Core\Mesh.h" />
-    <ClInclude Include="Core\Texture2D.h" />
-    <ClInclude Include="Shaders\ShaderProgram.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Shaders\advancedBasic.vert" />
-    <None Include="Shaders\basic.frag" />
-    <None Include="Shaders\basic.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
