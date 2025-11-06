@@ -1,10 +1,16 @@
 #pragma once
+
 #include <assert.h>
 #include <cstring>
 #include <iostream>
 #include <type_traits>
 #include <cstdlib>
 #include <utility>
+
+using int32 = int32_t;
+using uint32 = uint32_t;
+using int16 = int16_t;
+using uint16 = uint16_t;
 
 using namespace std;
 
@@ -207,19 +213,6 @@ inline void FVector<T>::Clear()
   }
   NumElements = 0;
 }
-
-//template<typename T>
-//inline ptrdiff_t FVector<T>::Find(T&& Val) const
-//{
-//  for (size_t i = 0; i < NumElements; ++i)
-//  {
-//    if (ArrayBuffer[i] == Val)
-//    {
-//      return i;
-//    }
-//  }
-//  return -1;
-//}
 
 template<typename T>
 inline void FVector<T>::Expand()

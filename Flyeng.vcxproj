@@ -146,11 +146,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Core\Containers\FVector.cpp" />
     <ClCompile Include="Flyeng.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Core\Containers\FVector.h" />
+    <ClInclude Include="Core\Types\CoreTypes.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
