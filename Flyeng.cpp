@@ -1,16 +1,41 @@
 #pragma once
 
+#include "Windows.h"
 #define GLFW_INCLUDE_VULKAN
 #include "GLFW/glfw3.h"
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include "Core/Types/CoreTypes.h"
 #include <glm/mat4x4.hpp>
+#include <stdio.h>
 #include <iostream>
 #include <sstream>
 
 namespace Engine
 {
+  bool LoadVulkan()
+  {
+#if defined (_WIN32) || (_WIN64) || defined(__x86_64__) || defined(__ppc64__) || defined(__aarch64__)
+    // dynamically load vulkan lib
+    HMODULE vkLib = LoadLibraryA("vulkan-1.dll"); // HMODULE holds a base address of dll
+    if (vkLib == nullptr)
+    {
+      std::cerr << "vulkan-1.dll is failed to load" << std::endl;
+      return false;
+    }
+
+    // GetProcAddress returns the address of a function inside dll ("vkCreateInstance")
+    PFN_vkCreateInstance pfnVkCreateInstance = (PFN_vkCreateInstance)GetProcAddress(vkLib, "vkCreateInstance");
+    if (pfnVkCreateInstance == nullptr)
+    {
+      std::cerr << "Failed to retrieve the address of vkCreateInstance" << std::endl;
+      return false;
+    }
+    std::cout << "vulkan-1.dll is successfully loaded" << std::endl;
+#endif
+    return true;
+  }
+
   bool IsAppRunning = false;
   namespace Window
   {
@@ -22,7 +47,17 @@ namespace Engine
   }
 }
 
-static bool CreateWindow()
+static bool CreateVulkan()
+{
+  return Engine::LoadVulkan();
+}
+
+static bool DestroyVulkan()
+{
+  return true;
+}
+
+static bool CreateGLFWWindow()
 {
   glfwInit();
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -63,7 +98,7 @@ static bool CreateWindow()
   return true;
 }
 
-static bool DestroyWindow()
+static bool DestroyGLFWWindow()
 {
   if (Engine::Window::AppWindow == nullptr)
   {
@@ -76,8 +111,9 @@ static bool DestroyWindow()
 static bool TerminateEngine()
 {
   std::cout << "Engine should close" << std::endl;
-  DestroyWindow();
+  DestroyGLFWWindow();
   glfwTerminate();
+  DestroyVulkan();
   return true;
 }
 
@@ -91,15 +127,22 @@ static void OnKeyPressed(GLFWwindow* window, int key, int scancode, int action, 
 
 static bool InitEngine()
 {
-  if (CreateWindow() == false)
+  if (CreateGLFWWindow() == false)
   {
-    std::cerr << "Failed to create window";
+    std::cerr << "Failed to create window" << std::endl;
     TerminateEngine();
     return false;
   }
   std::cout << "Engine should start" << std::endl;
   Engine::IsAppRunning = true;
   glfwSetKeyCallback(Engine::Window::AppWindow, OnKeyPressed);
+
+  if (CreateVulkan() == false)
+  {
+    std::cerr << "Failed to create renderer" << std::endl;
+    TerminateEngine();
+    return false;
+  }
   return true;
 }
 
