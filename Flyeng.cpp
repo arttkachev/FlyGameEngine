@@ -17,7 +17,7 @@
 template <typename... Args>
 constexpr void ENGINE_LOG(Args&& ... args)
 {
-  ((std::cout << " " << std::forward<Args>(args)), ...) << std::endl;
+  ((std::cout << std::forward<Args>(args)), ...) << std::endl;
 }
 
 namespace Engine
@@ -135,7 +135,7 @@ static bool InitEngine()
   {
     ENGINE_ERROR("Failed to create window");
     TerminateEngine();
-    return false;
+    return EXIT_FAILURE;
   }
   ENGINE_LOG("Engine should start");
   Engine::IsAppRunning = true;
@@ -145,7 +145,7 @@ static bool InitEngine()
   {
     ENGINE_ERROR("Failed to create renderer");
     TerminateEngine();
-    return false;
+    return EXIT_FAILURE;
   }
   return true;
 }
