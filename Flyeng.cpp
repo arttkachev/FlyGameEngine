@@ -7,36 +7,23 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include "Core/Types/CoreTypes.h"
 #include <glm/mat4x4.hpp>
-#include <stdio.h>
 #include <iostream>
 #include <sstream>
+#include <string>
+
+#define ENGINE_ERROR(error) \
+    std::cerr << ("[error][%s:%u] %s", __func__, __LINE__, error) << std::endl;
+
+template <typename... Args>
+constexpr void ENGINE_LOG(Args&& ... args)
+{
+  ((std::cout << " " << std::forward<Args>(args)), ...) << std::endl;
+}
 
 namespace Engine
 {
-  bool LoadVulkan()
-  {
-#if defined (_WIN32) || (_WIN64) || defined(__x86_64__) || defined(__ppc64__) || defined(__aarch64__)
-    // dynamically load vulkan lib
-    HMODULE vkLib = LoadLibraryA("vulkan-1.dll"); // HMODULE holds a base address of dll
-    if (vkLib == nullptr)
-    {
-      std::cerr << "vulkan-1.dll is failed to load" << std::endl;
-      return false;
-    }
-
-    // GetProcAddress returns the address of a function inside dll ("vkCreateInstance")
-    PFN_vkCreateInstance pfnVkCreateInstance = (PFN_vkCreateInstance)GetProcAddress(vkLib, "vkCreateInstance");
-    if (pfnVkCreateInstance == nullptr)
-    {
-      std::cerr << "Failed to retrieve the address of vkCreateInstance" << std::endl;
-      return false;
-    }
-    std::cout << "vulkan-1.dll is successfully loaded" << std::endl;
-#endif
-    return true;
-  }
-
   bool IsAppRunning = false;
+  static HMODULE vkLib = nullptr;
   namespace Window
   {
     GLFWwindow* AppWindow = nullptr;
@@ -49,11 +36,38 @@ namespace Engine
 
 static bool CreateVulkan()
 {
-  return Engine::LoadVulkan();
+#if defined (_WIN32) || (_WIN64) || defined(__x86_64__) || defined(__ppc64__) || defined(__aarch64__)
+  // dynamically load vulkan lib
+  Engine::vkLib = LoadLibraryA("vulkan-1.dll"); // HMODULE holds a base address of dll
+  if (Engine::vkLib == nullptr)
+  {
+    ENGINE_ERROR("vulkan-1.dll is failed to load");
+    return EXIT_FAILURE;
+  }
+
+  // GetProcAddress returns the address of a function inside dll ("vkCreateInstance")
+  PFN_vkCreateInstance pfnVkCreateInstance = (PFN_vkCreateInstance)GetProcAddress(Engine::vkLib, "vkCreateInstance");
+  if (pfnVkCreateInstance == nullptr)
+  {
+    ENGINE_ERROR("Failed to retrieve the address of vkCreateInstance");
+    return EXIT_FAILURE;
+  }
+
+  uint32 ExtensionCount = 0;
+  vkEnumerateInstanceExtensionProperties(nullptr, &ExtensionCount, nullptr);
+  if (ExtensionCount <= 0)
+  {
+    return EXIT_FAILURE;
+  }
+  ENGINE_LOG("Number of Vulkan extensions:", ExtensionCount);
+  ENGINE_LOG("vulkan-1.dll is successfully loaded");
+#endif
+  return true;
 }
 
 static bool DestroyVulkan()
 {
+  FreeLibrary(Engine::vkLib);
   return true;
 }
 
@@ -85,16 +99,6 @@ static bool CreateGLFWWindow()
   {
     return false;
   }
-
-  // TODO Transfer code to Vulkan Init
-  uint32 ExtensionCount = 0;
-  vkEnumerateInstanceExtensionProperties(nullptr, &ExtensionCount, nullptr);
-  if (ExtensionCount <= 0)
-  {
-    return false;
-  }
-  std::cout << "Number of Vulkan extensions " << ExtensionCount << std::endl;
-
   return true;
 }
 
@@ -110,7 +114,7 @@ static bool DestroyGLFWWindow()
 
 static bool TerminateEngine()
 {
-  std::cout << "Engine should close" << std::endl;
+  ENGINE_LOG("Engine should close");
   DestroyGLFWWindow();
   glfwTerminate();
   DestroyVulkan();
@@ -129,17 +133,17 @@ static bool InitEngine()
 {
   if (CreateGLFWWindow() == false)
   {
-    std::cerr << "Failed to create window" << std::endl;
+    ENGINE_ERROR("Failed to create window");
     TerminateEngine();
     return false;
   }
-  std::cout << "Engine should start" << std::endl;
+  ENGINE_LOG("Engine should start");
   Engine::IsAppRunning = true;
   glfwSetKeyCallback(Engine::Window::AppWindow, OnKeyPressed);
 
   if (CreateVulkan() == false)
   {
-    std::cerr << "Failed to create renderer" << std::endl;
+    ENGINE_ERROR("Failed to create renderer");
     TerminateEngine();
     return false;
   }
