@@ -12,6 +12,40 @@ using uint32 = uint32_t;
 using int16 = int16_t;
 using uint16 = uint16_t;
 
+#define WinPlatform (_WIN32) || (_WIN64) || defined(__x86_64__) || defined(__ppc64__) || defined(__aarch64__);
+
+#define ENGINE_ERROR(error) \
+    std::cerr <<error << " : " << __FUNCTION__ << " : " << __LINE__ <<  std::endl
+
+template <typename... Args>
+constexpr void ENGINE_LOG(Args&& ... args)
+{
+  ((std::cout << std::forward<Args>(args)), ...) << std::endl;
+}
+
+namespace Engine
+{
+  static bool IsAppRunning = false;
+
+  namespace Window
+  {
+    GLFWwindow* AppWindow = nullptr;
+    static const char* Title = "Flyeng v1.0";
+    static uint16 Width = 1440;
+    static uint16 Height = 1080;
+    static bool IsFullScreen = true;
+  }
+}
+
+namespace VulkanSpecs
+{
+  static HMODULE Vk_Lib = nullptr;
+  static VkInstance Vk_Instance = nullptr;
+  static const char* AppTitle = "VULKAN RENDERER";
+  static uint32 AppVersion = 1;
+  static uint32 ApiVersion = 0;
+}
+
 using namespace std;
 
 template <typename T>
@@ -33,7 +67,8 @@ public:
     GrowSize(100),
     NumElements(0)
   {
-    cout << "First allocation happened" << endl;
+
+    ENGINE_LOG("First allocation happened");
     ArrayBuffer = static_cast<T*>(malloc(sizeof(T) * MaxElementsNumber));
     assert(ArrayBuffer);
     ((new (ArrayBuffer + NumElements++) T(forward<Args>(args))), ...);
@@ -50,7 +85,7 @@ public:
     }
     free(ArrayBuffer);
     ArrayBuffer = nullptr;
-    cout << "Memory is freed" << endl;
+    ENGINE_LOG("Memory is freed");
   }
 
   T& operator[](size_t const Index)
@@ -64,7 +99,7 @@ public:
   {
     if (NumElements <= 0)
     {
-      cout << "First allocation happened" << endl;
+      ENGINE_LOG("First allocation happened");
       ArrayBuffer = static_cast<T*>(malloc(sizeof(T) * MaxElementsNumber));
 
     }
@@ -95,7 +130,7 @@ public:
     {
       Expand();
     }
-    cout << "InsertAt" << endl;
+
     if constexpr (is_trivially_copyable_v<T> == true)
     {
       for (size_t i = NumElements; i > Index; --i)
@@ -135,7 +170,7 @@ public:
   inline size_t Capacity() const { return MaxElementsNumber - NumElements; }
   void SwapElements(size_t const lIndex, size_t const rIndex);
   bool IsInRange(size_t const Index) const { return  Index >= 0 && Index < NumElements; }
-  
+
   template<typename T>
   inline ptrdiff_t Find(T&& Val) const
   {
@@ -217,7 +252,7 @@ inline void FVector<T>::Clear()
 template<typename T>
 inline void FVector<T>::Expand()
 {
-  cout << "Expansion happened" << endl;
+  ENGINE_LOG("Expansion happened");
   assert(GrowSize > 0);
   MaxElementsNumber += GrowSize;
   T* TempBuffer = static_cast<T*>(malloc(sizeof(T) * MaxElementsNumber));

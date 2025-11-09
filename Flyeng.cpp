@@ -11,53 +11,75 @@
 #include <sstream>
 #include <string>
 
-#define ENGINE_ERROR(error) \
-    std::cerr << ("[error][%s:%u] %s", __func__, __LINE__, error) << std::endl;
-
-template <typename... Args>
-constexpr void ENGINE_LOG(Args&& ... args)
-{
-  ((std::cout << std::forward<Args>(args)), ...) << std::endl;
-}
-
-namespace Engine
-{
-  bool IsAppRunning = false;
-  static HMODULE vkLib = nullptr;
-  namespace Window
-  {
-    GLFWwindow* AppWindow = nullptr;
-    const char* AppTitle = "Flyeng v1.0";
-    bool IsFullScreen = true;
-    uint16 AppWindowWidth = 1440;
-    uint16 AppWindowHeight = 1080;
-  }
-}
-
 static bool CreateVulkan()
 {
-#if defined (_WIN32) || (_WIN64) || defined(__x86_64__) || defined(__ppc64__) || defined(__aarch64__)
+#if defined WinPlatform
   // dynamically load vulkan lib
-  Engine::vkLib = LoadLibraryA("vulkan-1.dll"); // HMODULE holds a base address of dll
-  if (Engine::vkLib == nullptr)
+  VulkanSpecs::Vk_Lib = LoadLibraryA("vulkan-1.dll"); // HMODULE holds a base address of dll
+  if (VulkanSpecs::Vk_Lib == nullptr)
   {
     ENGINE_ERROR("vulkan-1.dll is failed to load");
-    return EXIT_FAILURE;
+    return false;
   }
 
   // GetProcAddress returns the address of a function inside dll ("vkCreateInstance")
-  PFN_vkCreateInstance pfnVkCreateInstance = (PFN_vkCreateInstance)GetProcAddress(Engine::vkLib, "vkCreateInstance");
-  if (pfnVkCreateInstance == nullptr)
+  PFN_vkCreateInstance Vk_CreateInstance = (PFN_vkCreateInstance)GetProcAddress(VulkanSpecs::Vk_Lib, "vkCreateInstance");
+  if (Vk_CreateInstance == nullptr)
   {
-    ENGINE_ERROR("Failed to retrieve the address of vkCreateInstance");
-    return EXIT_FAILURE;
+    ENGINE_ERROR("vkGetInstanceProcAddr failed");
+    return false;
   }
+
+  PFN_vkEnumerateInstanceVersion Vk_EnumerateInstanceVersion = (PFN_vkEnumerateInstanceVersion)GetProcAddress(VulkanSpecs::Vk_Lib, "vkEnumerateInstanceVersion");
+  if (Vk_EnumerateInstanceVersion == nullptr)
+  {
+    ENGINE_ERROR("vkGetInstanceProcAddr failed");
+    return false;
+  }
+
+  if (vkEnumerateInstanceVersion(&VulkanSpecs::ApiVersion) != VK_SUCCESS)
+  {
+    ENGINE_ERROR("vkEnumerateInstanceVersion failed");
+    return false;
+  }
+
+  const char* InstanceLayers[] = { "VK_LAYER_KHRONOS_validation" };
+  const char* InstanceExtensions[] = { "" };
+
+  VkApplicationInfo Vk_ApplicationInfo =
+  {
+    VK_STRUCTURE_TYPE_APPLICATION_INFO,
+    nullptr,
+    Engine::Window::Title,
+    VulkanSpecs::AppVersion,
+    nullptr,
+    0,
+    VulkanSpecs::ApiVersion
+  };
+
+  VkInstanceCreateInfo Vk_InstanceCreateInfo =
+  {
+    VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+    nullptr,
+    0,
+    &Vk_ApplicationInfo,
+    sizeof(InstanceLayers) / sizeof(InstanceLayers[0]),
+    InstanceLayers,
+    sizeof(InstanceExtensions) / sizeof(InstanceExtensions[0]),
+    InstanceExtensions
+  };
+
+  /*if (Vk_CreateInstance(&Vk_InstanceCreateInfo, nullptr, &Engine::Vk_Instance) != VK_SUCCESS)
+  {
+    ENGINE_ERROR("vkCreateInstance is failed");
+    return false;
+  }*/
 
   uint32 ExtensionCount = 0;
   vkEnumerateInstanceExtensionProperties(nullptr, &ExtensionCount, nullptr);
   if (ExtensionCount <= 0)
   {
-    return EXIT_FAILURE;
+    return false;
   }
   ENGINE_LOG("Number of Vulkan extensions:", ExtensionCount);
   ENGINE_LOG("vulkan-1.dll is successfully loaded");
@@ -67,7 +89,7 @@ static bool CreateVulkan()
 
 static bool DestroyVulkan()
 {
-  FreeLibrary(Engine::vkLib);
+  FreeLibrary(VulkanSpecs::Vk_Lib);
   return true;
 }
 
@@ -88,11 +110,11 @@ static bool CreateGLFWWindow()
     {
       return false;
     }
-    Engine::Window::AppWindow = glfwCreateWindow(ViewMode->width, ViewMode->height, Engine::Window::AppTitle, nullptr, nullptr);
+    Engine::Window::AppWindow = glfwCreateWindow(ViewMode->width, ViewMode->height, Engine::Window::Title, nullptr, nullptr);
   }
   else
   {
-    Engine::Window::AppWindow = glfwCreateWindow(Engine::Window::AppWindowWidth, Engine::Window::AppWindowHeight, Engine::Window::AppTitle, nullptr, nullptr);
+    Engine::Window::AppWindow = glfwCreateWindow(Engine::Window::Width, Engine::Window::Height, Engine::Window::Title, nullptr, nullptr);
   }
 
   if (Engine::Window::AppWindow == nullptr)
@@ -126,6 +148,7 @@ static void OnKeyPressed(GLFWwindow* window, int key, int scancode, int action, 
   if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
   {
     Engine::IsAppRunning = false;
+    glfwSetWindowShouldClose(Engine::Window::AppWindow, 1);
   }
 }
 
@@ -135,7 +158,7 @@ static bool InitEngine()
   {
     ENGINE_ERROR("Failed to create window");
     TerminateEngine();
-    return EXIT_FAILURE;
+    return false;
   }
   ENGINE_LOG("Engine should start");
   Engine::IsAppRunning = true;
@@ -145,7 +168,7 @@ static bool InitEngine()
   {
     ENGINE_ERROR("Failed to create renderer");
     TerminateEngine();
-    return EXIT_FAILURE;
+    return false;
   }
   return true;
 }
@@ -160,7 +183,7 @@ static bool RunMainLoop()
 
 static void RunEngine()
 {
-  while (Engine::IsAppRunning == true)
+  while (Engine::IsAppRunning == true && glfwWindowShouldClose(Engine::Window::AppWindow) == 0)
   {
     RunMainLoop();
   }
@@ -170,7 +193,9 @@ static void RunEngine()
 
 int main()
 {
-  InitEngine();
-  RunEngine();
+  if (InitEngine() == true)
+  {
+    RunEngine();
+  }
   return 0;
 }
