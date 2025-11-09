@@ -50,7 +50,7 @@ static bool CreateVulkan()
   {
     VK_STRUCTURE_TYPE_APPLICATION_INFO,
     nullptr,
-    Engine::Window::Title,
+    VulkanSpecs::AppTitle,
     VulkanSpecs::AppVersion,
     nullptr,
     0,
