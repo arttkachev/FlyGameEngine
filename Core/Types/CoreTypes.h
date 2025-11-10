@@ -41,6 +41,7 @@ namespace VulkanSpecs
 {
   static HMODULE Vk_Lib = nullptr;
   static VkInstance Vk_Instance = nullptr;
+  static PFN_vkGetInstanceProcAddr Vk_GetInstanceProcAddr = nullptr;
   static const char* AppTitle = "Vulkan Renderer";
   static uint32 AppVersion = 1;
   static uint32 ApiVersion = 0;
