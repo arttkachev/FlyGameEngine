@@ -14,6 +14,18 @@
 
 VKAPI_ATTR VkBool32 VKAPI_CALL OnVulkanMessageCallback(VkDebugUtilsMessageSeverityFlagBitsEXT MessageSeverity, VkDebugUtilsMessageTypeFlagsEXT MessageTypes, const VkDebugUtilsMessengerCallbackDataEXT* CallbackData, void* UserData)
 {
+  (void)UserData;
+  if (MessageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT) printf("[VERBOSE_BIT]");
+  if (MessageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) printf("[INFO_BIT]");
+  if (MessageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) printf("[WARNING_BIT]");
+  if (MessageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) printf("[ERROR_BIT]");
+
+  if (MessageTypes & VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT) printf("[GENERAL_BIT]");
+  if (MessageTypes & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) printf("[VALIDATION_BIT]");
+  if (MessageTypes & VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT) printf("[PERFORMANCE_BIT]");
+  if (MessageTypes & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) printf("[ERROR_BIT]");
+
+  if (CallbackData != nullptr && CallbackData->pMessage != nullptr) printf(" %s\n", CallbackData->pMessage);
   return VK_FALSE;
 }
 
@@ -96,6 +108,26 @@ static bool CreateVulkan()
     nullptr
   };
 
+  VkBool32 validate_core = VK_TRUE;
+  VkBool32 check_image_layout = VK_TRUE;
+  VkBool32 check_command_buffer = VK_TRUE;
+  VkBool32 object_lifetime = VK_TRUE;
+
+  VkLayerSettingEXT Vk_LayerSetting[] =
+  {
+    { "VK_LAYER_KHRONOS_validation", "validate_core", VK_LAYER_SETTING_TYPE_BOOL32_EXT, 1, &validate_core },
+    { "VK_LAYER_KHRONOS_validation", "check_image_layout", VK_LAYER_SETTING_TYPE_BOOL32_EXT, 1, &check_image_layout },
+    { "VK_LAYER_KHRONOS_validation", "check_command_buffer", VK_LAYER_SETTING_TYPE_BOOL32_EXT, 1, &check_command_buffer },
+    { "VK_LAYER_KHRONOS_validation", "object_lifetime", VK_LAYER_SETTING_TYPE_BOOL32_EXT, 1, &object_lifetime },
+  };
+
+  VkLayerSettingsCreateInfoEXT Vk_LayerSettingsCreateInfoEXT
+  {
+    VK_STRUCTURE_TYPE_LAYER_SETTINGS_CREATE_INFO_EXT,
+    &Vk_DebugUtilsMessengerCreateInfoEXT,
+    sizeof(Vk_LayerSetting) / sizeof(Vk_LayerSetting[0]),
+    Vk_LayerSetting
+  };
 
   VkInstanceCreateInfo Vk_InstanceCreateInfo =
   {
