@@ -98,7 +98,7 @@ public:
   template<typename... Args>
   inline size_t Add(Args&&... args)
   {
-    if (NumElements <= 0)
+    if (NumElements == 0)
     {
       ENGINE_LOG("First allocation happened");
       ArrayBuffer = static_cast<T*>(malloc(sizeof(T) * MaxElementsNumber));
@@ -107,7 +107,7 @@ public:
     assert(ArrayBuffer != nullptr);
     if (NumElements >= MaxElementsNumber)
     {
-      Expand();
+      Expand(GrowSize);
     }
     new (ArrayBuffer + NumElements) T(forward<Args>(args)...);
     return NumElements++;
@@ -172,6 +172,20 @@ public:
   void SwapElements(size_t const lIndex, size_t const rIndex);
   bool IsInRange(size_t const Index) const { return  Index >= 0 && Index < NumElements; }
 
+  inline void Reserve(const size_t ElemNum)
+  {
+    assert(ElemNum > 0);
+    if (NumElements == 0)
+    {
+      MaxElementsNumber = ElemNum;
+      GrowSize = MaxElementsNumber;
+    }
+    else
+    {
+      Expand(ElemNum);
+    }
+  }
+
   template<typename T>
   inline ptrdiff_t Find(T&& Val) const
   {
@@ -202,7 +216,7 @@ private:
   size_t MaxElementsNumber = 0;
   size_t GrowSize = 0;
 
-  void Expand();
+  void Expand(const size_t ExpandSize);
   size_t Partition(size_t const lIndex, size_t const rIndex, T const Pivot);
   void QuickSort(size_t const lIndex, size_t const rIndex);
 };
@@ -251,24 +265,34 @@ inline void FVector<T>::Clear()
 }
 
 template<typename T>
-inline void FVector<T>::Expand()
+inline void FVector<T>::Expand(const size_t ExpandSize)
 {
-  ENGINE_LOG("Expansion happened");
   assert(GrowSize > 0);
-  MaxElementsNumber += GrowSize;
+  ENGINE_LOG("Expansion happened");
+  MaxElementsNumber = (GrowSize == ExpandSize) ? MaxElementsNumber + GrowSize : ExpandSize;
+  const size_t ElementsToCopy = (NumElements <= MaxElementsNumber) ? NumElements : MaxElementsNumber;
   T* TempBuffer = static_cast<T*>(malloc(sizeof(T) * MaxElementsNumber));
+  assert(TempBuffer != nullptr);
   if constexpr (is_trivially_copyable_v<T> == true)
   {
-    memcpy(TempBuffer, ArrayBuffer, sizeof(T) * NumElements);
+    memcpy(TempBuffer, ArrayBuffer, sizeof(T) * ElementsToCopy);
   }
   else
   {
-    for (size_t i = 0; i < NumElements; ++i)
+    for (size_t i = 0; i < ElementsToCopy; ++i)
     {
       new (TempBuffer + i) T(move_if_noexcept(ArrayBuffer[i]));
       destroy_at(&ArrayBuffer[i]);
     }
+    if (ElementsToCopy < NumElements)
+    {
+      for (size_t i = ElementsToCopy; i < NumElements; ++i)
+      {
+        destroy_at(&ArrayBuffer[i]);
+      }
+    }
   }
+  NumElements = ElementsToCopy;
   free(ArrayBuffer);
   ArrayBuffer = TempBuffer;
 }
@@ -322,3 +346,33 @@ inline void FVector<T>::QuickSort(size_t const lIndex, size_t const rIndex)
   QuickSort(lIndex, PivotIndex == 0 ? PivotIndex : PivotIndex - 1);
   QuickSort(PivotIndex + 1, rIndex);
 }
+
+static constexpr auto BYTE_BITS{ 8 };
+static constexpr auto MAX_UCHAR_VAL{ 0xff };
+static constexpr auto EXTR_BIT_IN_CHAR(const uint32 Bit) { return (1 << (BYTE_BITS - 1 - ((Bit) % BYTE_BITS))); };
+static constexpr auto BIT_TO_CHAR_INDEX(const uint32 Bit) { return Bit / BYTE_BITS; }
+static constexpr auto MIN_CHAR_NUM_FOR_BITS(const uint32 Bits) { return (((Bits - 1) / CHAR_BIT) + 1); }
+
+
+class FBitArray
+{
+public:
+  FBitArray(const uint32 BitsNum) :
+    TotalBits(BitsNum),
+    TotalBytes(MIN_CHAR_NUM_FOR_BITS(TotalBits))
+  {
+    assert(BitsNum > 0);
+    BitsBuffer.Reserve(TotalBytes);
+    for (size_t i = 0; i < TotalBytes; ++i)
+    {
+      BitsBuffer.Add(0);
+    }
+  }
+
+  ~FBitArray() = default;
+
+private:
+  FVector<unsigned char> BitsBuffer{};
+  uint32 TotalBits = 0;
+  uint32 TotalBytes = 0;
+};
