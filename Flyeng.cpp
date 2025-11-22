@@ -11,7 +11,6 @@
 #include <sstream>
 #include <string>
 
-
 VKAPI_ATTR VkBool32 VKAPI_CALL OnVulkanMessageCallback(VkDebugUtilsMessageSeverityFlagBitsEXT MessageSeverity, VkDebugUtilsMessageTypeFlagsEXT MessageTypes, const VkDebugUtilsMessengerCallbackDataEXT* CallbackData, void* UserData)
 {
   (void)UserData;
@@ -144,6 +143,13 @@ static bool CreateVulkan()
   if (Vk_CreateInstance(&Vk_InstanceCreateInfo, nullptr, &VulkanSpecs::Vk_Instance) != VK_SUCCESS)
   {
     ENGINE_ERROR("vkCreateInstance is failed");
+    return false;
+  }
+
+  PFN_vkCreateDebugUtilsMessengerEXT Vk_CreateDebugUtilsMessengerEXT = (PFN_vkCreateDebugUtilsMessengerEXT)VulkanSpecs::Vk_GetInstanceProcAddr(VulkanSpecs::Vk_Instance, "vkCreateDebugUtilsMessengerEXT");
+  if (Vk_CreateDebugUtilsMessengerEXT == nullptr)
+  {
+    ENGINE_ERROR("vkGetInstanceProcAddr is failed");
     return false;
   }
 

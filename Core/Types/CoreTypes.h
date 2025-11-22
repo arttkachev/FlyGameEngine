@@ -26,6 +26,11 @@ constexpr void ENGINE_LOG(Args&& ... args)
 namespace Engine
 {
   static bool IsAppRunning = false;
+  static constexpr bool IsRunOnArchitectureLSB()
+  {
+    constexpr unsigned char LSB_Char = 1;
+    return *(unsigned char*)(&LSB_Char);
+  }
 
   namespace Window
   {
@@ -89,7 +94,7 @@ public:
     ENGINE_LOG("Memory is freed");
   }
 
-  T& operator[](size_t const Index)
+  T& operator[](size_t const Index) const
   {
     assert(IsInRange(Index));
     return *(ArrayBuffer + Index);
@@ -183,6 +188,16 @@ public:
     else
     {
       Expand(ElemNum);
+    }
+  }
+
+  template<typename T>
+  inline void Assign(const size_t Count, T&& Val)
+  {
+    assert(Count <= NumElements);
+    for (size_t i = 0; i < Count; ++i)
+    {
+      ArrayBuffer[i] = forward<T>(Val);
     }
   }
 
@@ -347,12 +362,21 @@ inline void FVector<T>::QuickSort(size_t const lIndex, size_t const rIndex)
   QuickSort(PivotIndex + 1, rIndex);
 }
 
-static constexpr auto BYTE_BITS{ 8 };
+static constexpr auto BITS_IN_BYTE{ 8 };
 static constexpr auto MAX_UCHAR_VAL{ 0xff };
-static constexpr auto EXTR_BIT_IN_CHAR(const uint32 Bit) { return (1 << (BYTE_BITS - 1 - ((Bit) % BYTE_BITS))); };
-static constexpr auto BIT_TO_CHAR_INDEX(const uint32 Bit) { return Bit / BYTE_BITS; }
+static constexpr auto BIT_IN_CHAR(const uint32 Bit)
+{
+  if constexpr (Engine::IsRunOnArchitectureLSB())
+  {
+    return 1 << Bit % BITS_IN_BYTE;
+  }
+  else
+  {
+    return (1 << (BITS_IN_BYTE - 1 - ((Bit) % BITS_IN_BYTE)));
+  }
+};
+static constexpr auto BIT_TO_CHAR_INDEX(const uint32 Bit) { return Bit / BITS_IN_BYTE; }
 static constexpr auto MIN_CHAR_NUM_FOR_BITS(const uint32 Bits) { return (((Bits - 1) / CHAR_BIT) + 1); }
-
 
 class FBitArray
 {
@@ -362,17 +386,65 @@ public:
     TotalBytes(MIN_CHAR_NUM_FOR_BITS(TotalBits))
   {
     assert(BitsNum > 0);
-    BitsBuffer.Reserve(TotalBytes);
+    BitBuffer.Reserve(TotalBytes);
     for (size_t i = 0; i < TotalBytes; ++i)
     {
-      BitsBuffer.Add(0);
+      BitBuffer.Add(0);
     }
   }
 
   ~FBitArray() = default;
 
+  size_t operator[](const size_t Index) const
+  {
+    assert(BitBuffer.IsInRange(Index));
+    return BitBuffer[Index];
+  }
+
+  void ClearAllBits()
+  {
+    BitBuffer.Assign(BitBuffer.Size(), 0);
+  }
+
+  void SetAllBits()
+  {
+    BitBuffer.Assign(BitBuffer.Size(), MAX_UCHAR_VAL);
+    unsigned char BitRemainder = TotalBits % BITS_IN_BYTE;
+    if (BitRemainder != 0)
+    {
+      unsigned char mask = 0;
+      if constexpr (Engine::IsRunOnArchitectureLSB())
+      {
+        mask = MAX_UCHAR_VAL >> (BITS_IN_BYTE - BitRemainder);
+      }
+      else
+      {
+        mask = MAX_UCHAR_VAL << (BITS_IN_BYTE - BitRemainder);
+      }
+      BitBuffer[BIT_TO_CHAR_INDEX(TotalBits - 1)] = mask;
+    }
+  }
+
+  void SetByte(const size_t ByteIndex, const unsigned char Val)
+  {
+    assert(BitBuffer.IsInRange(ByteIndex));
+    BitBuffer[ByteIndex] = Val;
+  }
+
+  void SetBit(const size_t BitIndex)
+  {
+    assert(TotalBits > BitIndex);
+    BitBuffer[BIT_TO_CHAR_INDEX(BitIndex)] |= BIT_IN_CHAR(BitIndex);
+  }
+
+  void ClearBit(const size_t BitIndex)
+  {
+    assert(TotalBits > BitIndex);
+    BitBuffer[BIT_TO_CHAR_INDEX(BitIndex)] &= ~BIT_IN_CHAR(BitIndex);
+  }
+
 private:
-  FVector<unsigned char> BitsBuffer{};
+  FVector<unsigned char> BitBuffer{};
   uint32 TotalBits = 0;
   uint32 TotalBytes = 0;
 };
