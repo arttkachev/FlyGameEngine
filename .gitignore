@@ -1,6 +1,5 @@
 bin/
-/src/Main/Debug
-/src/Main/Release
+/x64
 /Release
 /Flyeng
 /Debug
