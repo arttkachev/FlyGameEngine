@@ -23,8 +23,6 @@ namespace Engine
         glm::vec3 color;
         static vector<VkVertexInputBindingDescription> getBindingDescription();
         static vector<VkVertexInputAttributeDescription> getAttributeDescription();
-
-
       };
 
       ModelData(RenderDevice& renderDevice, const vector<Vertex>& vertices);
@@ -42,8 +40,6 @@ namespace Engine
       VkBuffer vertextBuffer;
       VkDeviceMemory vertexBufferMemory;
       uint32_t vertexCount = 0;
-
-
     };
   }
 }

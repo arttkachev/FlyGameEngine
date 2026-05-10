@@ -198,5 +198,4 @@ void Engine::Core::Launch::drawFrame()
   {
     throw runtime_error("failed to present swap chain image");
   }
-
 }

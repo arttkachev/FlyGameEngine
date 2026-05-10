@@ -30,7 +30,7 @@ namespace Engine
     void ModelData::createVertexBuffers(const vector<Vertex>& vertices)
     {
       vertexCount = static_cast<uint32_t>(vertices.size());
-      assert(vertexCount >= 3 && "vertex Count must be at least 3");
+      assert(vertexCount >= 3 && "vertex count must be at least 3");
       VkDeviceSize bufferSize = sizeof(vertices[0]) * vertexCount;
       renderDevice.createBuffer(bufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
