@@ -17,15 +17,19 @@ namespace Engine
       Window(const Window&) = delete;
       Window& operator=(const Window&) = delete;
 
-      void initWindow();
       inline bool shouldClose() { return glfwWindowShouldClose(window); };
       void createWindowSurface(VkInstance instance, VkSurfaceKHR* surface);
       VkExtent2D getExtend() { return { static_cast<uint32_t>(width), static_cast<uint32_t>(height) }; }
+      inline bool wasFrameBufferResized() { return frameBufferResized; }
+      void ResetFrameBufferResizedFlag() { frameBufferResized = false; }
 
     private:
+      static void frameBufferResizedCallback(GLFWwindow* window, int32_t width, int32_t height);
+      void initWindow();
       GLFWwindow* window = nullptr;
-      const int32_t width = 0;
-      const int32_t height = 0;
+      int32_t width = 0;
+      int32_t height = 0;
+      bool frameBufferResized = false;
       const char* windowTitle = nullptr;
     };
   }

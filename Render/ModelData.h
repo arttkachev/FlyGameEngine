@@ -17,7 +17,7 @@ namespace Engine
     {
     public:
 
-      struct Vertex 
+      struct Vertex
       {
         glm::vec2 position;
         glm::vec3 color;
@@ -35,7 +35,7 @@ namespace Engine
 
       void bindVertexBuffer(VkCommandBuffer commandBuffer);
       void drawVertexBuffer(VkCommandBuffer commandBuffer);
-      
+
     private:
       void createVertexBuffers(const vector<Vertex>& vertices);
       RenderDevice& renderDevice;
@@ -43,7 +43,7 @@ namespace Engine
       VkDeviceMemory vertexBufferMemory;
       uint32_t vertexCount = 0;
 
-    
+
     };
   }
 }

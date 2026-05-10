@@ -20,7 +20,7 @@ namespace Engine
     public:
       Launch();
       ~Launch();
-      
+
       Launch(const Launch&) = delete;
       Launch& operator=(const Launch&) = delete;
 
@@ -34,11 +34,14 @@ namespace Engine
       void createPipelineLayout();
       void createPipeline();
       void createCommandBuffers();
+      void freeCommandBuffers();
       void drawFrame();
+      void recreateSwapChain();
+      void recordCommandBuffer(int32_t imageIndex);
 
       Engine::Core::Window gameWindow{ WIDTH, HEIGHT, TITLE };
       Engine::Render::RenderDevice renderDevice{ gameWindow };
-      Engine::Render::SwapChain swapChain{ renderDevice, gameWindow.getExtend() };
+      unique_ptr<Engine::Render::SwapChain> swapChain{};
       unique_ptr<Engine::Render::Pipeline> graphicsPipeline{};
       VkPipelineLayout pipelineLayout{};
       vector<VkCommandBuffer> commandBuffers{};

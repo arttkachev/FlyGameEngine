@@ -4,7 +4,7 @@
 
 namespace Engine
 {
-  namespace Render 
+  namespace Render
   {
     ModelData::ModelData(RenderDevice& renderDevice, const vector<Vertex>& vertices)
       : renderDevice(renderDevice)
@@ -41,7 +41,7 @@ namespace Engine
       vkMapMemory(renderDevice.device(), vertexBufferMemory, 0, bufferSize, 0, &data);
       memcpy(data, vertices.data(), static_cast<uint32_t>(bufferSize));
       vkUnmapMemory(renderDevice.device(), vertexBufferMemory);
-      
+
     }
     vector<VkVertexInputBindingDescription> ModelData::Vertex::getBindingDescription()
     {

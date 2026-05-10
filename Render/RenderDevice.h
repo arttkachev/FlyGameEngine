@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-namespace Engine 
+namespace Engine
 {
   namespace Render
   {
@@ -33,7 +33,7 @@ namespace Engine
 
       RenderDevice(Engine::Core::Window& window);
       ~RenderDevice();
-      
+
       RenderDevice(const RenderDevice&) = delete;
       void operator=(const RenderDevice&) = delete;
       RenderDevice(RenderDevice&&) = delete;

@@ -13,15 +13,19 @@ namespace Engine
   {
     struct PipelineConfigInfo
     {
-      // init fixed render stage options
-      VkViewport viewport;
-      VkRect2D scissor;
+      PipelineConfigInfo(const PipelineConfigInfo&) = delete;
+      PipelineConfigInfo& operator=(const PipelineConfigInfo&) = delete;
+
+      // fixed render stage options
+      VkPipelineViewportStateCreateInfo viewportInfo;
       VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo;
       VkPipelineRasterizationStateCreateInfo rasterizationInfo;
       VkPipelineMultisampleStateCreateInfo multisampleInfo;
       VkPipelineColorBlendAttachmentState colorBlendAttachment;
       VkPipelineColorBlendStateCreateInfo colorBlendInfo;
       VkPipelineDepthStencilStateCreateInfo depthStencilInfo;
+      vector<VkDynamicState> dynamicStateEnables;
+      VkPipelineDynamicStateCreateInfo dynamicStateInfo;
       VkPipelineLayout pipelineLayout = nullptr;
       VkRenderPass renderPass = nullptr;
       uint32_t subpass = 0;
@@ -35,7 +39,7 @@ namespace Engine
       Pipeline& operator=(const Pipeline&) = delete;
 
       void bind(VkCommandBuffer commandBuffer);
-      static PipelineConfigInfo initDefaultPipelineConfigInfo(uint32_t width, uint32_t height);
+      static void initDefaultPipelineConfigInfo(PipelineConfigInfo& configInfo);
 
     private:
       static vector<char> readFile(const string& filepath);
@@ -52,5 +56,5 @@ namespace Engine
       VkShaderModule fragShaderModule = nullptr;
     };
   }
-  
+
 }
