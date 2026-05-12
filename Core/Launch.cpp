@@ -70,7 +70,7 @@ void Engine::Core::Launch::createPipeline()
 
 void Engine::Core::Launch::createCommandBuffers()
 {
-  commandBuffers.resize(swapChain->imageCount());
+  commandBuffers.resize(Engine::Render::SwapChain::MAX_FRAMES_IN_FLIGHT);
   VkCommandBufferAllocateInfo allocInfo{};
   allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
   allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
