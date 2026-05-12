@@ -1,8 +1,25 @@
 #include "Launch.h"
 #include "Window.h"
 
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include "glm/glm.hpp"
+
 #include <stdexcept>
 #include <array>
+
+// temp
+namespace Engine
+{
+  namespace Render
+  {
+    struct SimplePushConstantData
+    {
+      glm::vec2 offset;
+      alignas(16) glm::vec3 color;
+    };
+  }
+}
 
 Engine::Core::Launch::Launch()
 {
@@ -42,12 +59,19 @@ void Engine::Core::Launch::loadModelData()
 
 void Engine::Core::Launch::createPipelineLayout()
 {
+  // push constant range setup
+  VkPushConstantRange pushConstantRange{};
+  // push constant data is available in vertext and fragment shader
+  pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+  pushConstantRange.offset = 0;
+  pushConstantRange.size = 32;//sizeof(Engine::Render::SimplePushConstantData);
+
   VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
   pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
   pipelineLayoutInfo.setLayoutCount = 0;
   pipelineLayoutInfo.pSetLayouts = nullptr;
-  pipelineLayoutInfo.pushConstantRangeCount = 0;
-  pipelineLayoutInfo.pPushConstantRanges = nullptr;
+  pipelineLayoutInfo.pushConstantRangeCount = 1;
+  pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 
   if (vkCreatePipelineLayout(renderDevice.device(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
   {
@@ -91,6 +115,8 @@ void Engine::Core::Launch::freeCommandBuffers()
 
 void Engine::Core::Launch::recordCommandBuffer(int32_t imageIndex)
 {
+  static int32_t frame = 0;
+  frame = (frame + 1) % 1000;
   VkCommandBufferBeginInfo beginInfo{};
   beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
@@ -107,8 +133,9 @@ void Engine::Core::Launch::recordCommandBuffer(int32_t imageIndex)
   renderPassInfo.renderArea.offset = { 0, 0 };
   renderPassInfo.renderArea.extent = swapChain->getSwapChainExtent();
 
+  // clear values = background
   array<VkClearValue, 2> clearValues{};
-  clearValues[0].color = { 0.1f, 0.1f, 0.1f, 1.0f };
+  clearValues[0].color = { 0.01f, 0.01f, 0.01f, 1.0f };
   clearValues[1].depthStencil = { 1.0f, 0 };
   renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
   renderPassInfo.pClearValues = clearValues.data();
@@ -131,7 +158,19 @@ void Engine::Core::Launch::recordCommandBuffer(int32_t imageIndex)
   // actual draw call
   //vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
   modelData->bindVertexBuffer(commandBuffers[imageIndex]);
-  modelData->drawVertexBuffer(commandBuffers[imageIndex]);
+
+  for (int32_t j = 0; j < 4; j++)
+  {
+    Engine::Render::SimplePushConstantData push{};
+    push.offset = { -0.5f + frame * 0.002f, -0.4f + j * 0.25f };
+    push.color = { 0.0f, 0.0f, 0.2f + 0.2f * j };
+    vkCmdPushConstants(commandBuffers[imageIndex], pipelineLayout,
+      VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
+      sizeof(Engine::Render::SimplePushConstantData), &push);
+    // draw each copy for shaders with slightly different data
+    modelData->drawVertexBuffer(commandBuffers[imageIndex]);
+  }
+
   vkCmdEndRenderPass(commandBuffers[imageIndex]);
   if (vkEndCommandBuffer(commandBuffers[imageIndex]) != VK_SUCCESS)
   {
